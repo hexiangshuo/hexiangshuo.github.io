@@ -197,7 +197,7 @@
                   
                   <a class="dropdown-item" href="https://atcoder.jp/" target="_self">
                     
-                    <span>atcoder</span>
+                    <span>AtCoder</span>
                   </a>
                 
               </div>
@@ -343,7 +343,7 @@
                 <a href="https://atcoder.jp/" target="_self">
                   <div class="mobile-grid-item">
                     <i class="iconfont icon-link-fill"></i>
-                    <span>atcoder</span>
+                    <span>AtCoder</span>
                   </div>
                 </a>
               </div>
@@ -386,7 +386,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Welcome to my blog~~~"></span>
+            <span id="subtitle" data-typed-text="Welcome to my blog~~~,Hexiangshuo&#39;s blog~~~"></span>
           
         </div>
 
@@ -541,7 +541,9 @@
       }
       var text = subtitle.getAttribute('data-typed-text');
       
-        typing(text);
+        var texts = ["Welcome to my blog~~~","Hexiangshuo's blog~~~"];
+        var idx = Math.floor(Math.random() * texts.length);
+        typing(texts[idx]);
       
     })(window, document);
   </script>
