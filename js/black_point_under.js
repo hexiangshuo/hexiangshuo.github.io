@@ -11,10 +11,10 @@
         return {
             zIndex: parseInt(getAttrOrDefault(lastScript, 'zIndex', '-1'), 10),
             opacity: parseFloat(getAttrOrDefault(lastScript, 'opacity', '0.5')),
-            color: getAttrOrDefault(lastScript, 'color', '50,130,200'),
+            color: getAttrOrDefault(lastScript, 'color', '150,150,150'),
             count: parseInt(getAttrOrDefault(lastScript, 'count', '200'), 10),
             gradient: getAttrOrDefault(lastScript, 'gradient', 'true') === 'true',
-            particleMax: parseInt(getAttrOrDefault(lastScript, 'particleMax', '6000'), 10),
+            particleMax: parseInt(getAttrOrDefault(lastScript, 'particleMax', '10000'), 10),
             mouseMax: parseInt(getAttrOrDefault(lastScript, 'mouseMax', '30000'), 10)
         };
     }
@@ -56,11 +56,11 @@
             particles.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                xa: 2 * Math.random() - 1,
-                ya: 2 * Math.random() - 1,
+                xa: 3 * Math.random() - 1,
+                ya: 3 * Math.random() - 1,
                 max: config.particleMax,
                 // 保存初始速度大小，用于恢复
-                initSpeed: Math.sqrt(Math.pow(2 * Math.random() - 1, 2) + Math.pow(2 * Math.random() - 1, 2))
+                initSpeed: Math.sqrt(Math.pow(3 * Math.random() - 1, 2) + Math.pow(3 * Math.random() - 1, 2))
             });
         }
     }
@@ -135,7 +135,7 @@
                     var baseColor = config.color.split(',').map(Number);
                     var r, g, b;
                     if (config.gradient) {
-                        var offset = 50 * Math.sin(time * 0.8 + j * 0.2);
+                        var offset = 80 * Math.sin(time * 0.8 + j * 0.2);
                         r = Math.min(255, Math.max(0, baseColor[0] + offset));
                         g = Math.min(255, Math.max(0, baseColor[1] + offset * 0.7));
                         b = Math.min(255, Math.max(0, baseColor[2] + offset * 0.3));
@@ -156,7 +156,7 @@
 
             // ---- 4. 速度恢复机制（鼠标移开后恢复运动） ----
             var currentSpeed = Math.sqrt(p.xa * p.xa + p.ya * p.ya);
-            var targetSpeed = p.initSpeed * 0.8; // 恢复到初始速度的80%
+            var targetSpeed = p.initSpeed * 1.0; // 恢复到初始速度的80%
             if (currentSpeed < targetSpeed && currentSpeed > 0) {
                 // 如果速度太小，向随机方向增加速度
                 var recoveryFactor = 0.02; // 恢复速度
