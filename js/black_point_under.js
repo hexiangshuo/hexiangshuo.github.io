@@ -11,7 +11,7 @@
         return {
             zIndex: parseInt(getAttrOrDefault(lastScript, 'zIndex', '-1'), 10),
             opacity: parseFloat(getAttrOrDefault(lastScript, 'opacity', '0.5')),
-            color: getAttrOrDefault(lastScript, 'color', '150,150,150'),
+            color: getAttrOrDefault(lastScript, 'color', '150,150,175'),
             count: parseInt(getAttrOrDefault(lastScript, 'count', '200'), 10),
             gradient: getAttrOrDefault(lastScript, 'gradient', 'true') === 'true',
             particleMax: parseInt(getAttrOrDefault(lastScript, 'particleMax', '10000'), 10),
