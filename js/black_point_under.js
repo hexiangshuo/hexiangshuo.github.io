@@ -11,7 +11,7 @@
         return {
             zIndex: parseInt(getAttrOrDefault(lastScript, 'zIndex', '-1'), 10),
             opacity: parseFloat(getAttrOrDefault(lastScript, 'opacity', '0.5')),
-            color: getAttrOrDefault(lastScript, 'color', '150,150,175'),
+            color: getAttrOrDefault(lastScript, 'color', '150,150,150'),
             count: parseInt(getAttrOrDefault(lastScript, 'count', '200'), 10),
             gradient: getAttrOrDefault(lastScript, 'gradient', 'true') === 'true',
             particleMax: parseInt(getAttrOrDefault(lastScript, 'particleMax', '10000'), 10),
@@ -59,7 +59,7 @@
                 xa: 3 * Math.random() - 1,
                 ya: 3 * Math.random() - 1,
                 max: config.particleMax,
-                // 保存初始速度大小，用于恢复
+                baseMax: config.particleMax,   // <-- 新增：保存基础连线距离
                 initSpeed: Math.sqrt(Math.pow(3 * Math.random() - 1, 2) + Math.pow(3 * Math.random() - 1, 2))
             });
         }
@@ -88,6 +88,24 @@
             if (p.x > width || p.x < 0) p.xa *= -1;
             if (p.y > height || p.y < 0) p.ya *= -1;
 
+            // ====== 动态调整粒子间连线距离（鼠标影响） ======
+            if (mouse.x !== null && mouse.y !== null) {
+                var dxToMouse = p.x - mouse.x;
+                var dyToMouse = p.y - mouse.y;
+                var distToMouseSq = dxToMouse * dxToMouse + dyToMouse * dyToMouse;
+                var maxMouseDistSq = config.mouseMax;
+                if (distToMouseSq < maxMouseDistSq) {
+                    // 距离越近，缩放因子越小（最小 0.2，最大 1.0）
+                    var ratio = Math.sqrt(distToMouseSq) / Math.sqrt(maxMouseDistSq);
+                    var scale = 0.2 + 0.8 * ratio;
+                    p.max = p.baseMax * scale;
+                } else {
+                    p.max = p.baseMax;
+                }
+            } else {
+                p.max = p.baseMax;
+            }
+
             // 绘制粒子点
             ctx.fillRect(p.x - 0.5, p.y - 0.5, 1, 1);
 
@@ -100,7 +118,7 @@
                 var dx = p.x - other.x;
                 var dy = p.y - other.y;
                 var distSq = dx * dx + dy * dy;
-                var maxDistSq = other.max || config.particleMax;
+                var maxDistSq = other.max || config.particleMax;  // other.max 已动态更新
 
                 // 距离小于阈值才处理
                 if (distSq < maxDistSq && distSq > 0.01) {
@@ -122,8 +140,7 @@
                         // ---- 2. 径向速度阻尼（仅在远离鼠标时） ----
                         var radialV = (p.xa * dx + p.ya * dy) / dist;
                         if (radialV > 0) {
-                            // 平滑阻尼系数：距离越近阻尼越强
-                            var damping = 0.1 + 0.9 * (1 - ratio);
+                            var damping = 0.2 + 0.8 * (1 - ratio);
                             var newRadialV = radialV * damping;
                             var deltaV = newRadialV - radialV;
                             p.xa += deltaV * dx / dist;
@@ -135,10 +152,10 @@
                     var baseColor = config.color.split(',').map(Number);
                     var r, g, b;
                     if (config.gradient) {
-                        var offset = 80 * Math.sin(time * 0.8 + j * 0.2);
-                        r = Math.min(255, Math.max(0, baseColor[0] + offset));
-                        g = Math.min(255, Math.max(0, baseColor[1] + offset * 0.7));
-                        b = Math.min(255, Math.max(0, baseColor[2] + offset * 0.3));
+                        var offset = 50 * Math.sin(time * 0.8 + j * 0.2);
+                        r = Math.min(255, Math.max(0, baseColor[0] + offset * 0.3));
+                        g = Math.min(255, Math.max(0, baseColor[1] + offset * 0.5));
+                        b = Math.min(255, Math.max(0, baseColor[2] + offset * 0.7));
                     } else {
                         r = baseColor[0];
                         g = baseColor[1];
@@ -146,7 +163,7 @@
                     }
 
                     ctx.beginPath();
-                    ctx.lineWidth = Math.max(0.3, alpha * 1.2);
+                    ctx.lineWidth = Math.max(0.3, alpha * 1.0);
                     ctx.strokeStyle = 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + alpha + ')';
                     ctx.moveTo(p.x, p.y);
                     ctx.lineTo(other.x, other.y);
@@ -156,15 +173,13 @@
 
             // ---- 4. 速度恢复机制（鼠标移开后恢复运动） ----
             var currentSpeed = Math.sqrt(p.xa * p.xa + p.ya * p.ya);
-            var targetSpeed = p.initSpeed * 1.0; // 恢复到初始速度的80%
+            var targetSpeed = p.initSpeed * 1.0;
             if (currentSpeed < targetSpeed && currentSpeed > 0) {
-                // 如果速度太小，向随机方向增加速度
-                var recoveryFactor = 0.02; // 恢复速度
-                var angle = Math.atan2(p.ya, p.xa) + (Math.random() - 0.5) * 0.5; // 加一点随机性
+                var recoveryFactor = 0.02;
+                var angle = Math.atan2(p.ya, p.xa) + (Math.random() - 0.5) * 0.5;
                 p.xa += recoveryFactor * Math.cos(angle) * targetSpeed;
                 p.ya += recoveryFactor * Math.sin(angle) * targetSpeed;
             } else if (currentSpeed > targetSpeed * 1.5) {
-                // 如果速度过大，稍微减速（防止失控）
                 p.xa *= 0.999;
                 p.ya *= 0.999;
             }
