@@ -59,7 +59,8 @@
                 xa: 3 * Math.random() - 1,
                 ya: 3 * Math.random() - 1,
                 max: config.particleMax,
-                baseMax: config.particleMax,   // <-- 新增：保存基础连线距离
+                baseMax: config.particleMax,
+                currentScale: 1.0,          // <-- 新增：当前缩放因子（用于平滑过渡）
                 initSpeed: Math.sqrt(Math.pow(3 * Math.random() - 1, 2) + Math.pow(3 * Math.random() - 1, 2))
             });
         }
@@ -88,23 +89,25 @@
             if (p.x > width || p.x < 0) p.xa *= -1;
             if (p.y > height || p.y < 0) p.ya *= -1;
 
-            // ====== 动态调整粒子间连线距离（鼠标影响） ======
+            // ====== 动态调整粒子间连线距离（平滑过渡） ======
+            var targetScale = 1.0;  // 默认无影响
             if (mouse.x !== null && mouse.y !== null) {
                 var dxToMouse = p.x - mouse.x;
                 var dyToMouse = p.y - mouse.y;
                 var distToMouseSq = dxToMouse * dxToMouse + dyToMouse * dyToMouse;
                 var maxMouseDistSq = config.mouseMax;
                 if (distToMouseSq < maxMouseDistSq) {
-                    // 距离越近，缩放因子越小（最小 0.2，最大 1.0）
                     var ratio = Math.sqrt(distToMouseSq) / Math.sqrt(maxMouseDistSq);
-                    var scale = 0.2 + 0.8 * ratio;
-                    p.max = p.baseMax * scale;
-                } else {
-                    p.max = p.baseMax;
+                    targetScale = 0.2 + 0.8 * ratio;   // 0.2 ~ 1.0
                 }
-            } else {
-                p.max = p.baseMax;
             }
+
+            // 平滑插值：每帧向目标靠拢 5%（数值越小过渡越慢）
+            var lerpFactor = 0.02;   // 可调，0.05 = 每帧移动 5% 的距离
+            p.currentScale += (targetScale - p.currentScale) * lerpFactor;
+            // 限制范围（防止浮点误差超出）
+            p.currentScale = Math.min(1.0, Math.max(0.2, p.currentScale));
+            p.max = p.baseMax * p.currentScale;
 
             // 绘制粒子点
             ctx.fillRect(p.x - 0.5, p.y - 0.5, 1, 1);
@@ -118,7 +121,7 @@
                 var dx = p.x - other.x;
                 var dy = p.y - other.y;
                 var distSq = dx * dx + dy * dy;
-                var maxDistSq = other.max || config.particleMax;  // other.max 已动态更新
+                var maxDistSq = other.max || config.particleMax;
 
                 // 距离小于阈值才处理
                 if (distSq < maxDistSq && distSq > 0.01) {
@@ -129,7 +132,6 @@
 
                     // ====== 鼠标吸引（径向阻尼 + 速度恢复） ======
                     if (other === mouse && distSq > 0) {
-                        // ---- 1. 位置吸引（柔和） ----
                         var ratio = dist / maxDist;
                         if (ratio < 1 && dist > 100) {
                             var attractStrength = 0.05 * (1 - ratio);
@@ -137,7 +139,6 @@
                             p.y -= attractStrength * dy;
                         }
 
-                        // ---- 2. 径向速度阻尼（仅在远离鼠标时） ----
                         var radialV = (p.xa * dx + p.ya * dy) / dist;
                         if (radialV > 0) {
                             var damping = 0.2 + 0.8 * (1 - ratio);
@@ -148,7 +149,7 @@
                         }
                     }
 
-                    // ---- 3. 粒子间连线 ----
+                    // ---- 粒子间连线 ----
                     var baseColor = config.color.split(',').map(Number);
                     var r, g, b;
                     if (config.gradient) {
@@ -171,7 +172,7 @@
                 }
             }
 
-            // ---- 4. 速度恢复机制（鼠标移开后恢复运动） ----
+            // ---- 速度恢复机制 ----
             var currentSpeed = Math.sqrt(p.xa * p.xa + p.ya * p.ya);
             var targetSpeed = p.initSpeed * 1.0;
             if (currentSpeed < targetSpeed && currentSpeed > 0) {
@@ -184,7 +185,7 @@
                 p.ya *= 0.999;
             }
 
-            // 从候选列表中移除当前粒子，避免重复计算
+            // 从候选列表中移除当前粒子
             var idx = allNodes.indexOf(p);
             if (idx > -1) allNodes.splice(idx, 1);
         }
