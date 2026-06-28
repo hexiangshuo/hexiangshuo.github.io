@@ -1,20 +1,20 @@
 // source/js/hitokoto.js
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. 创建 <a> 作为容器（初始 href 为 #）
+    // 1. 创建 <a> 作为容器
     var container = document.createElement('a');
     container.id = 'hitokoto-container';
     container.href = '#';
-    container.target = '_blank';  // 新标签页打开
+    container.target = '_blank';
     container.style.cssText = `
         font-size: 0.85rem;
         margin: 0;
         padding: 0;
         color: #888;
-        text-align: right;
         text-decoration: none;
         cursor: pointer;
-        display: block;
-        transition: color 0.3s ease;   /* 平滑变色过渡 */
+        display: inline-block;      /* 改为 inline-block，宽度自适应内容 */
+        float: right;               /* 右对齐 */
+        transition: color 0.3s ease;
     `;
     container.textContent = '✨ 加载一言中...';
 
@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(container);
     }
 
-    // 3. 鼠标悬停变色（进入和离开）
+    // 3. 鼠标悬停变色
     container.addEventListener('mouseenter', function() {
-        this.style.color = '#30A9DE';   // 蓝色，可自行修改
+        this.style.color = '#30A9DE';
     });
     container.addEventListener('mouseleave', function() {
-        this.style.color = '#888';      // 恢复原色
+        this.style.color = '#888';
     });
 
     // 4. 请求一言数据
@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             container.textContent = text;
 
-            // 5. 设置跳转链接（如果存在 uuid）
             if (data.uuid) {
                 container.href = 'https://hitokoto.cn?uuid=' + data.uuid;
             } else {
