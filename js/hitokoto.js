@@ -41,10 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('一言数据：', data);
 
             var text = data.hitokoto;
-            if (data.from_who) text += ' —— ' + data.from_who;
+            text += ' —— ';
+            if (data.from_who) text += data.from_who;
             if (data.from) text += '《' + data.from + '》';
             if (!data.from_who && !data.from) {
-                text += ' —— 佚名';
+                text += '佚名';
             }
             container.textContent = text;
 
