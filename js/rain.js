@@ -1,16 +1,27 @@
-// source/js/rain.js — 圆形雨滴 + 渐细渐变尾巴（适合图片背景）
+// source/js/rain.js — 圆形雨滴 + 渐细渐变尾巴（颜色统一，拖尾尾部更透明）
 (function() {
     var CONFIG = {
         count: 100,                 // 雨滴数量
         speed: 10,                   // 基础下落速度
-        radius: 0.75,                // 雨滴半径
-        color: 'rgba(150, 180, 255, 0.2)',
-        wind: 0,                  // 基础水平飘移
+        radius: 0.50,               // 雨滴半径
+        // ----- 颜色配置（替换原 color 字符串） -----
+        r: 150,                     // 红色分量 (0-255)
+        g: 180,                     // 绿色分量
+        b: 255,                     // 蓝色分量
+        maxOpacity: 0.1,            // 雨滴头部最大不透明度 (0~1)
+        tailStartAlpha: 0.02,       // 拖尾尾部透明度 (比头部更透明，0为完全透明)
+        // ------------------------------------------
+        wind: 0,                    // 基础水平飘移
         sizeVariation: 2,           // 大小随机变化范围
-        turbulence: 0.2,           // 扰动幅度
+        turbulence: 0.2,            // 扰动幅度
         tailLength: 20,             // 尾巴长度（像素）
         tailWidth: 2.0,             // 尾巴头部宽度（相对于雨滴半径的倍数）
     };
+
+    // 统一生成 rgba 颜色的函数
+    function makeColor(alpha) {
+        return 'rgba(' + CONFIG.r + ',' + CONFIG.g + ',' + CONFIG.b + ',' + alpha + ')';
+    }
 
     var canvas = document.createElement('canvas');
     canvas.id = 'rain-canvas';
@@ -43,7 +54,7 @@
             radius: CONFIG.radius + Math.random() * CONFIG.sizeVariation,
             speed: CONFIG.speed + Math.random() * 1.5,
             wind: CONFIG.wind + (Math.random() - 0.5) * 0.5,
-            opacity: 0.5 + Math.random() * 0.5,
+            opacity: 0.5 + Math.random() * 0.5,   // 0.5~1.0
             tailLength: CONFIG.tailLength + Math.random() * 8,
             vx: 0,
             vy: 0,
@@ -80,51 +91,41 @@
             if (drop.x > width) drop.x = 0;
             if (drop.x < 0) drop.x = width;
 
-            // ===== 绘制尾巴（四边形，宽度从尾部（细）渐变到头部（粗）） =====
+            // ===== 计算当前雨滴的最终透明度 =====
+            var finalAlpha = CONFIG.maxOpacity * drop.opacity;
+
+            // ===== 绘制尾巴（四边形） =====
             var tailLen = drop.tailLength;
-            // 尾巴的起点（尾部，上方）和终点（头部，下方）
             var startX = drop.x - drop.wind * 0.3;
             var startY = drop.y - tailLen;
             var endX = drop.x;
             var endY = drop.y;
 
-            // 头部宽度（粗），尾部宽度为0
             var headWidth = drop.radius * CONFIG.tailWidth;
             var tailWidth = 0;
 
-            // 构造四边形路径：从尾部左上 -> 尾部右上 -> 头部右上 -> 头部左上
-            // 由于我们要渐变透明度，用 fillRect 或自定义形状并用渐变色填充
-            // 更精确：使用路径 + fill，并设置渐变色
+            // 颜色渐变：尾部透明度为 CONFIG.tailStartAlpha（略高于0），头部为 finalAlpha
             var gradient = ctx.createLinearGradient(startX, startY, endX, endY);
-            // 尾部完全透明，头部不透明
-            var baseColor = CONFIG.color.replace('0.8', '0');
-            var headColor = CONFIG.color.replace('0.8', drop.opacity);
-            gradient.addColorStop(0, baseColor);
-            gradient.addColorStop(1, headColor);
+            gradient.addColorStop(0, makeColor(CONFIG.tailStartAlpha));
+            gradient.addColorStop(1, makeColor(finalAlpha * 1.2));
 
-            // 计算四边形四个角
-            // 尾部（宽度0）的点就是 (startX, startY)
-            // 头部两点：左右偏移 headWidth/2
             var halfHead = headWidth / 2;
-            var halfTail = tailWidth / 2; // 0
+            var halfTail = tailWidth / 2;
 
             ctx.beginPath();
-            // 从尾部开始（由于宽度为0，两点重合）
             ctx.moveTo(startX - halfTail, startY);
             ctx.lineTo(startX + halfTail, startY);
-            // 到头部右侧
             ctx.lineTo(endX + halfHead, endY);
-            // 到头部左侧
             ctx.lineTo(endX - halfHead, endY);
             ctx.closePath();
 
             ctx.fillStyle = gradient;
             ctx.fill();
 
-            // ===== 绘制头部雨滴（圆形，更亮） =====
+            // ===== 绘制头部圆形雨滴 =====
             ctx.beginPath();
             ctx.arc(drop.x, drop.y, drop.radius, 0, Math.PI * 2);
-            ctx.fillStyle = CONFIG.color.replace('0.8', drop.opacity);
+            ctx.fillStyle = makeColor(finalAlpha);
             ctx.fill();
         }
 
