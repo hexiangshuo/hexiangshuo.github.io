@@ -1,7 +1,7 @@
 // source/js/rain.js — 圆形雨滴 + 渐细渐变尾巴（颜色统一，拖尾尾部更透明）
 (function() {
     var CONFIG = {
-        count: 100,                 // 雨滴数量
+        count: 120,                 // 雨滴数量
         speed: 10,                   // 基础下落速度
         radius: 0.50,               // 雨滴半径
         // ----- 颜色配置（替换原 color 字符串） -----
