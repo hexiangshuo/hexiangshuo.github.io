@@ -1,4 +1,4 @@
-/* ===== 滚动条 — 极细、透明、更白灰蓝 ===== */
+/* ===== 滚动条 — 极细、透明、中性灰（偏冷但基本不蓝） ===== */
 
 ::-webkit-scrollbar {
     width: 4px;
@@ -12,14 +12,14 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #c0cee0;      /* 更白的灰蓝，接近白色但带蓝调 */
+    background: #a8b4c0;      /* 中性冷灰，几乎不带蓝 */
     border-radius: 4px;
     min-height: 30px;
     transition: background 0.3s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #b0c0d4;      /* 悬浮时稍深一点，保持蓝灰 */
+    background: #8c9aa8;      /* 悬浮时稍深，依然中性 */
 }
 
 ::-webkit-scrollbar-corner {
@@ -28,8 +28,8 @@
 
 /* 暗色模式 */
 [data-theme="dark"] ::-webkit-scrollbar-thumb {
-    background: #6a7a9a;      /* 暗色下保持灰蓝，不会太亮 */
+    background: #5a6a7a;      /* 暗色下深灰，偏冷但无蓝味 */
 }
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-    background: #7a8aaa;
+    background: #6a7a8a;
 }
