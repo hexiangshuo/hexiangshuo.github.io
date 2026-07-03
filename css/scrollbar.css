@@ -1,0 +1,35 @@
+/* ===== 滚动条 — 极细、透明、更白灰蓝 ===== */
+
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c0cee0;      /* 更白的灰蓝，接近白色但带蓝调 */
+    border-radius: 4px;
+    min-height: 30px;
+    transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #b0c0d4;      /* 悬浮时稍深一点，保持蓝灰 */
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+/* 暗色模式 */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #6a7a9a;      /* 暗色下保持灰蓝，不会太亮 */
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #7a8aaa;
+}
