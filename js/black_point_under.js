@@ -53,15 +53,17 @@
     function initParticles() {
         particles = [];
         for (var i = 0; i < config.count; i++) {
+            var xa = 3 * Math.random() - 1;   // 先定义变量
+            var ya = 3 * Math.random() - 1;
             particles.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                xa: 3 * Math.random() - 1,
-                ya: 3 * Math.random() - 1,
+                xa: xa,                       // 使用变量赋值
+                ya: ya,
                 max: config.particleMax,
                 baseMax: config.particleMax,
-                currentScale: 1.0,          // <-- 新增：当前缩放因子（用于平滑过渡）
-                initSpeed: Math.sqrt(Math.pow(3 * Math.random() - 1, 2) + Math.pow(3 * Math.random() - 1, 2))
+                currentScale: 1.0,
+                initSpeed: Math.sqrt(xa * xa + ya * ya)  // 现在 xa, ya 是可见的
             });
         }
     }
@@ -110,7 +112,8 @@
             p.max = p.baseMax * p.currentScale;
 
             // 绘制粒子点
-            ctx.fillRect(p.x - 0.5, p.y - 0.5, 1, 1);
+            ctx.fillStyle = 'rgba(45, 67, 106, 0.9)';
+            ctx.fillRect(p.x - 0.75, p.y - 0.75, 1.5, 1.5);
 
             // 遍历其他节点（鼠标 + 其他粒子）
             for (var j = 0; j < allNodes.length; j++) {
