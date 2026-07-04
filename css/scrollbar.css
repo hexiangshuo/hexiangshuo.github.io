@@ -1,4 +1,4 @@
-/* ===== 滚动条 — 极细、透明、中性灰（偏冷但基本不蓝） ===== */
+/* ===== 滚动条 — 渐变 + 柔和发光 ===== */
 
 ::-webkit-scrollbar {
     width: 4px;
@@ -12,24 +12,41 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #a8b4c0;      /* 中性冷灰，几乎不带蓝 */
+    /* 微妙渐变：上浅下深，不抢眼 */
+    background: linear-gradient(180deg, #b8c4d0, #9aaab8);
     border-radius: 4px;
     min-height: 30px;
-    transition: background 0.3s;
+    /* 柔和发光：极淡，不刺眼 */
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.12), 0 0 4px rgba(0, 0, 0, 0.03);
+    transition: background 0.3s, box-shadow 0.3s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #8c9aa8;      /* 悬浮时稍深，依然中性 */
+    background: linear-gradient(180deg, #aab8c6, #8c9aa8);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.10), 0 0 4px rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #9aaab8, #7a8a9a);
+    box-shadow: 0 0 14px rgba(0, 0, 0, 0.12), 0 0 4px rgba(0, 0, 0, 0.06);
 }
 
 ::-webkit-scrollbar-corner {
     background: transparent !important;
 }
 
-/* 暗色模式 */
+/* ===== 暗色模式 ===== */
 [data-theme="dark"] ::-webkit-scrollbar-thumb {
-    background: #5a6a7a;      /* 暗色下深灰，偏冷但无蓝味 */
+    background: linear-gradient(180deg, #5a6a7e, #4a5a6e);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.10), 0 0 4px rgba(255, 255, 255, 0.02);
 }
+
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-    background: #6a7a8a;
+    background: linear-gradient(180deg, #6a7a8e, #4a5a6e);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.07), 0 0 4px rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #4a5a6e, #3a4a5e);
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.08), 0 0 4px rgba(255, 255, 255, 0.04);
 }
