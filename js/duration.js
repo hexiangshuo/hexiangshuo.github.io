@@ -1,6 +1,6 @@
 !(function() {
   /** 计时起始时间，自行修改 **/
-  var start = new Date("2026/04/01 00:00:00");
+  var start = new Date("2026/04/05 00:00:00");
 
   // ---- 新增：补零工具函数（解决重复） ----
   function padZero(num) {

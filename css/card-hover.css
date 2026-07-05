@@ -1,0 +1,6 @@
+.index-card {
+    transition: all 0.3s ease;
+}
+.index-card:hover {
+    transform: translateY(-5px);
+}
