@@ -11,7 +11,7 @@
         // ----- 物理参数 -----
         gravity: 0.08,              // 重力加速度（每帧增加下落速度）
         baseWind: 0.0,              // 基础水平风速（正数向右）
-        gustStrength: 1.5,          // 最大阵风强度（风力范围 -gustStrength ~ +gustStrength）
+        gustStrength: 1.0,          // 最大阵风强度（风力范围 -gustStrength ~ +gustStrength）
 
         // ----- 颜色配置 -----
         r: 150,                     // 红色分量 (0-255)

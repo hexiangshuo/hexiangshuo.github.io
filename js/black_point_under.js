@@ -10,8 +10,11 @@
         var lastScript = scripts[scripts.length - 1];
         return {
             zIndex: parseInt(getAttrOrDefault(lastScript, 'zIndex', '-1'), 10),
-            opacity: parseFloat(getAttrOrDefault(lastScript, 'opacity', '0.5')),
-            color: getAttrOrDefault(lastScript, 'color', '150,150,150'),
+            opacity: parseFloat(getAttrOrDefault(lastScript, 'opacity', '0.6')),
+            // ----- 粒子点颜色（固定色，不参与渐变） -----
+            dotColor: getAttrOrDefault(lastScript, 'dotColor', '100,120,155'),  // 亮蓝白
+            // ----- 连线颜色（参与渐变） -----
+            lineColor: getAttrOrDefault(lastScript, 'lineColor', '80,100,115'), // 灰蓝
             count: parseInt(getAttrOrDefault(lastScript, 'count', '200'), 10),
             gradient: getAttrOrDefault(lastScript, 'gradient', 'true') === 'true',
             particleMax: parseInt(getAttrOrDefault(lastScript, 'particleMax', '10000'), 10),
@@ -52,18 +55,22 @@
     // ========== 粒子初始化 ==========
     function initParticles() {
         particles = [];
-        for (var i = 0; i < config.count; i++) {
-            var xa = 3 * Math.random() - 1;   // 先定义变量
-            var ya = 3 * Math.random() - 1;
+        // 动态调整粒子数量（根据屏幕面积）
+        var area = width * height;
+        var density = 0.00012;
+        var actualCount = Math.min(350, Math.max(50, Math.round(area * density)));
+        for (var i = 0; i < actualCount; i++) {
+            var xa = 2 * (2 * Math.random() - 1);
+            var ya = 2 * (2 * Math.random() - 1);
             particles.push({
                 x: Math.random() * width,
                 y: Math.random() * height,
-                xa: xa,                       // 使用变量赋值
+                xa: xa,
                 ya: ya,
                 max: config.particleMax,
                 baseMax: config.particleMax,
                 currentScale: 1.0,
-                initSpeed: Math.sqrt(xa * xa + ya * ya)  // 现在 xa, ya 是可见的
+                initSpeed: Math.sqrt(xa * xa + ya * ya)
             });
         }
     }
@@ -80,6 +87,10 @@
 
         var allNodes = [mouse].concat(particles);
 
+        // 解析颜色
+        var dotColor = config.dotColor.split(',').map(Number);
+        var lineBaseColor = config.lineColor.split(',').map(Number);
+
         for (var i = 0; i < particles.length; i++) {
             var p = particles[i];
 
@@ -92,7 +103,7 @@
             if (p.y > height || p.y < 0) p.ya *= -1;
 
             // ====== 动态调整粒子间连线距离（平滑过渡） ======
-            var targetScale = 1.0;  // 默认无影响
+            var targetScale = 1.0;
             if (mouse.x !== null && mouse.y !== null) {
                 var dxToMouse = p.x - mouse.x;
                 var dyToMouse = p.y - mouse.y;
@@ -100,19 +111,17 @@
                 var maxMouseDistSq = config.mouseMax;
                 if (distToMouseSq < maxMouseDistSq) {
                     var ratio = Math.sqrt(distToMouseSq) / Math.sqrt(maxMouseDistSq);
-                    targetScale = 0.2 + 0.8 * ratio;   // 0.2 ~ 1.0
+                    targetScale = 0.2 + 0.8 * ratio;
                 }
             }
 
-            // 平滑插值：每帧向目标靠拢 5%（数值越小过渡越慢）
-            var lerpFactor = 0.02;   // 可调，0.05 = 每帧移动 5% 的距离
+            var lerpFactor = 0.02;
             p.currentScale += (targetScale - p.currentScale) * lerpFactor;
-            // 限制范围（防止浮点误差超出）
             p.currentScale = Math.min(1.0, Math.max(0.2, p.currentScale));
             p.max = p.baseMax * p.currentScale;
 
-            // 绘制粒子点
-            ctx.fillStyle = 'rgba(45, 67, 106, 0.9)';
+            // ====== 绘制粒子点（使用 dotColor，固定透明度） ======
+            ctx.fillStyle = 'rgba(' + dotColor[0] + ',' + dotColor[1] + ',' + dotColor[2] + ', 0.9)';
             ctx.fillRect(p.x - 0.75, p.y - 0.75, 1.5, 1.5);
 
             // 遍历其他节点（鼠标 + 其他粒子）
@@ -126,14 +135,13 @@
                 var distSq = dx * dx + dy * dy;
                 var maxDistSq = other.max || config.particleMax;
 
-                // 距离小于阈值才处理
                 if (distSq < maxDistSq && distSq > 0.01) {
                     var dist = Math.sqrt(distSq);
                     var maxDist = Math.sqrt(maxDistSq);
                     var alpha = (maxDist - dist) / maxDist;
                     alpha = Math.min(1, Math.max(0, alpha));
 
-                    // ====== 鼠标吸引（径向阻尼 + 速度恢复） ======
+                    // ====== 鼠标吸引 ======
                     if (other === mouse && distSq > 0) {
                         var ratio = dist / maxDist;
                         if (ratio < 1 && dist > 100) {
@@ -152,22 +160,21 @@
                         }
                     }
 
-                    // ---- 粒子间连线 ----
-                    var baseColor = config.color.split(',').map(Number);
+                    // ---- 粒子间连线（使用 lineColor，参与渐变） ----
                     var r, g, b;
                     if (config.gradient) {
                         var offset = 50 * Math.sin(time * 0.8 + j * 0.2);
-                        r = Math.min(255, Math.max(0, baseColor[0] + offset * 0.3));
-                        g = Math.min(255, Math.max(0, baseColor[1] + offset * 0.5));
-                        b = Math.min(255, Math.max(0, baseColor[2] + offset * 0.7));
+                        r = Math.min(255, Math.max(0, lineBaseColor[0] + offset * 0.3));
+                        g = Math.min(255, Math.max(0, lineBaseColor[1] + offset * 0.5));
+                        b = Math.min(255, Math.max(0, lineBaseColor[2] + offset * 0.7));
                     } else {
-                        r = baseColor[0];
-                        g = baseColor[1];
-                        b = baseColor[2];
+                        r = lineBaseColor[0];
+                        g = lineBaseColor[1];
+                        b = lineBaseColor[2];
                     }
 
                     ctx.beginPath();
-                    ctx.lineWidth = Math.max(0.3, alpha * 1.0);
+                    ctx.lineWidth = Math.max(0.3, alpha * 0.8);
                     ctx.strokeStyle = 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + alpha + ')';
                     ctx.moveTo(p.x, p.y);
                     ctx.lineTo(other.x, other.y);
@@ -188,7 +195,6 @@
                 p.ya *= 0.999;
             }
 
-            // 从候选列表中移除当前粒子
             var idx = allNodes.indexOf(p);
             if (idx > -1) allNodes.splice(idx, 1);
         }
@@ -209,13 +215,10 @@
         }, 100);
     }
 
-    // ========== 防抖resize ==========
+    // ========== 防抖resize（重新生成粒子适配新尺寸） ==========
     var debouncedResize = debounce(function() {
         updateSize();
-        for (var i = 0; i < particles.length; i++) {
-            particles[i].x = (particles[i].x / width) * width;
-            particles[i].y = (particles[i].y / height) * height;
-        }
+        initParticles();   // 重新生成，适应新尺寸
     }, 200);
 
     window.addEventListener('resize', debouncedResize);
