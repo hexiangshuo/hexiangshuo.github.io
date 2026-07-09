@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
         color: #888;
         text-decoration: none;
         cursor: pointer;
-        display: inline-block;      /* 改为 inline-block，宽度自适应内容 */
-        float: right;               /* 右对齐 */
+        display: inline-block;
+        float: right;
         transition: color 0.3s ease;
     `;
     container.textContent = '✨ 加载一言中...';
@@ -40,13 +40,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(function(data) {
             console.log('一言数据：', data);
 
+            // ----- 修复：去空格处理 -----
+            var fromWho = (data.from_who || '').trim();
+            var from = (data.from || '').trim();
+
             var text = data.hitokoto;
             text += ' —— ';
-            if (data.from_who) text += data.from_who;
-            if (data.from) text += '《' + data.from + '》';
-            if (!data.from_who && !data.from) {
+
+            if (fromWho) text += fromWho;
+            if (from) text += '《' + from + '》';
+
+            if (!fromWho && !from) {
                 text += '佚名';
             }
+
             container.textContent = text;
 
             if (data.uuid) {

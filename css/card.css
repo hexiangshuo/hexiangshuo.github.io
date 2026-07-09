@@ -1,6 +1,19 @@
+/* ===== 卡片滚动淡入 ===== */
+
+/* 默认状态：透明 + 向下偏移（为淡入做准备） */
 .index-card {
-    transition: all 0.3s ease;
+    opacity: 0;                     /* 完全透明 */
+    transform: scale(0.97);
+    transition: all 0.3s ease; /* 平滑过渡 */
 }
-.index-card:hover {
-    transform: translateY(-5px);
+
+/* 可见状态：JS 添加 .visible 类后触发 */
+.index-card.visible {
+    opacity: 1;                     /* 完全不透明 */
+    transform: scale(1);
+}
+
+/* 悬停上浮（与淡入叠加） */
+.index-card.visible:hover {
+    transform: translateY(-5px) !important;
 }
