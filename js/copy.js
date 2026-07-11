@@ -17,19 +17,19 @@
     btn.disabled = false;
     btn.style.opacity = '';
     btn.style.cursor = '';
-    btn.style.color = '#647587'; // 恢复默认颜色
+    btn.style.color = '#647587';
   }
 
-  // ===== 获取当前文章的原始 Markdown =====
+  // ===== 获取当前文章的原始 Markdown（解码路径） =====
   function getCurrentPostRaw() {
     if (typeof postsData === 'undefined') {
       console.error('postsData 未定义');
       return null;
     }
 
-    const currentPath = window.location.pathname;
+    // 解码当前路径（URL 编码 → 中文字符）
+    const currentPath = decodeURIComponent(window.location.pathname);
 
-    // 尝试直接匹配 path（已补前导斜杠）
     let post = postsData.find(p => p.path === currentPath);
     if (!post) {
       console.warn('未找到当前文章，路径:', currentPath);
@@ -42,7 +42,6 @@
   async function copyMarkdown(btn) {
     const originalText = btn.textContent;
 
-    // 禁用按钮，防止重复点击
     btn.disabled = true;
     btn.style.opacity = '0.5';
     btn.style.cursor = 'not-allowed';
@@ -66,7 +65,6 @@
           resetButton(btn, originalText);
         }, 2000);
       } else {
-        // 兼容旧浏览器
         const textarea = document.createElement('textarea');
         textarea.value = markdown;
         document.body.appendChild(textarea);
@@ -88,17 +86,8 @@
     }
   }
 
-  // ===== 注入按钮到侧边栏 =====
+  // ===== 注入按钮 =====
   function injectButton() {
-    // 优先查找目录容器 #toc，如果不存在则查找 .sidebar
-    let sidebar = document.querySelector('#toc');
-    if (!sidebar) {
-      sidebar = document.querySelector('.sidebar');
-    }
-    if (!sidebar) {
-      console.warn('未找到侧边栏，按钮未添加');
-      return;
-    }
     if (document.getElementById('copy-md-btn')) return;
 
     const btn = document.createElement('button');
@@ -106,7 +95,6 @@
     btn.textContent = CONFIG.btnText;
     btn.style.cssText = CONFIG.btnStyle;
 
-    // 悬停变色（仅在未禁用时）
     btn.addEventListener('mouseenter', function() {
       if (!this.disabled) {
         this.style.color = '#30a9de';
@@ -123,11 +111,39 @@
       copyMarkdown(this);
     });
 
-    // 插入到侧边栏最顶部（目录上方）
-    sidebar.insertBefore(btn, sidebar.firstChild);
+    // 插入策略：优先 .sidebar，否则 #toc 前面，否则文章标题下方……
+    let container = document.querySelector('.sidebar');
+    if (container) {
+      container.insertBefore(btn, container.firstChild);
+      console.log('按钮已插入到 .sidebar');
+      return;
+    }
+
+    container = document.querySelector('#toc');
+    if (container && container.parentNode) {
+      container.parentNode.insertBefore(btn, container);
+      console.log('按钮已插入到 #toc 前面');
+      return;
+    }
+
+    const header = document.querySelector('.post-header');
+    if (header && header.parentNode) {
+      header.parentNode.insertBefore(btn, header.nextSibling);
+      console.log('按钮已插入到 .post-header 之后');
+      return;
+    }
+
+    const content = document.querySelector('.post-content');
+    if (content) {
+      content.insertBefore(btn, content.firstChild);
+      console.log('按钮已插入到 .post-content 顶部');
+      return;
+    }
+
+    console.warn('未找到合适容器，按钮已追加到 body');
+    document.body.appendChild(btn);
   }
 
-  // ===== 启动 =====
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', injectButton);
   } else {
