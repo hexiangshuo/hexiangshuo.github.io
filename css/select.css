@@ -1,0 +1,12 @@
+/* ===== 选中文字样式 ===== */
+::selection {
+  background: rgba(48, 169, 222, 0.2);
+  color: inherit;
+}
+
+/* ===== SVG 图标对齐 ===== */
+.icon {
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}

@@ -4,6 +4,3 @@
     transition: all 0.1s ease !important;
     text-decoration: none !important;  /* 统一去掉下划线，而不是只在悬停时 */
 }
-.post-content a:hover {
-    transform: scale(1.05);
-}

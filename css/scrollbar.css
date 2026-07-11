@@ -3,6 +3,7 @@
 ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
+    transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-track {
