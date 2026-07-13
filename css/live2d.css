@@ -1,0 +1,12 @@
+#waifu {
+    z-index: 999 !important;
+    /* width: 500 !important; */
+    /* height: 500 !important; */
+}
+
+/* 移动设备上隐藏看板娘 */
+@media (max-width: 767px) {
+  #waifu {
+    display: none !important;
+  }
+}

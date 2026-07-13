@@ -125,23 +125,6 @@
       console.log('按钮已插入到 #toc 前面');
       return;
     }
-
-    const header = document.querySelector('.post-header');
-    if (header && header.parentNode) {
-      header.parentNode.insertBefore(btn, header.nextSibling);
-      console.log('按钮已插入到 .post-header 之后');
-      return;
-    }
-
-    const content = document.querySelector('.post-content');
-    if (content) {
-      content.insertBefore(btn, content.firstChild);
-      console.log('按钮已插入到 .post-content 顶部');
-      return;
-    }
-
-    console.warn('未找到合适容器，按钮已追加到 body');
-    document.body.appendChild(btn);
   }
 
   if (document.readyState === 'loading') {
