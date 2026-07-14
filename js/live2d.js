@@ -67,23 +67,3 @@ function loadExternalResource(url, type) {
 })();
 
 console.log(`\n%cLive2D%cWidget%c\n`, 'padding: 8px; background: #cd3e45; font-weight: bold; font-size: large; color: white;', 'padding: 8px; background: #ff5450; font-size: large; color: #eee;', '');
-
-/*
-く__,.ヘヽ.        /  ,ー､ 〉
-         ＼ ', !-─‐-i  /  /´
-         ／｀ｰ'       L/／｀ヽ､
-       /   ／,   /|   ,   ,       ',
-     ｲ   / /-‐/  ｉ  L_ ﾊ ヽ!   i
-      ﾚ ﾍ 7ｲ｀ﾄ   ﾚ'ｧ-ﾄ､!ハ|   |
-        !,/7 '0'     ´0iソ|    |
-        |.从"    _     ,,,, / |./    |
-        ﾚ'| i＞.､,,__  _,.イ /   .i   |
-          ﾚ'| | / k_７_/ﾚ'ヽ,  ﾊ.  |
-            | |/i 〈|/   i  ,.ﾍ |  i  |
-           .|/ /  ｉ：    ﾍ!    ＼  |
-            kヽ>､ﾊ    _,.ﾍ､    /､!
-            !'〈//｀Ｔ´', ＼ ｀'7'ｰr'
-            ﾚ'ヽL__|___i,___,ンﾚ|ノ
-                ﾄ-,/  |___./
-                'ｰ'    !_,.:
-*/

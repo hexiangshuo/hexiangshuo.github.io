@@ -1,0 +1,71 @@
+/* 文章内链接悬停放大 */
+.post-content a {
+    display: inline-block !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;  /* 统一去掉下划线，而不是只在悬停时 */
+}
+
+.post-content a:hover {
+    text-shadow: 0 0 10px rgba(48,169,222,0.2);
+}
+
+.highlight {
+  position: relative;           /* 让伪元素相对于此定位 */
+  /* background: #21252b; */
+  border-radius: 5px;
+  box-shadow: 0 10px 30px 0 rgba(0,0,0,0.4);
+  padding-top: 30px;
+  overflow: hidden;             /* 防止圆点溢出 */
+}
+
+.highlight::before {
+  content: '';
+  top: 10px;                    /* 直接设定位置，更直观 */
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  background: #fc625d;
+  border-radius: 50%;
+  box-shadow: 20px 0 #fdbc40, 40px 0 #35cd4b;
+}
+
+/* ===== 分割线：渐变细线 + 左对齐图标 ===== */
+
+.post-content hr,
+.markdown-body hr {
+    border: none;
+    height: 2px;
+    margin: 2rem 0 2rem 0;
+    background: linear-gradient(90deg, transparent 1.5rem, var(--line-color, #eaecef) 1.5rem, transparent);
+    position: relative;
+    opacity: 0.7;
+    overflow: visible;
+}
+
+.post-content hr::after {
+    content: '✦';
+    position: absolute;
+    top: 50%;
+    left: 0;                     /* 改为左对齐 */
+    transform: translateY(-50%); /* 只保留垂直居中 */
+    background: transparent;
+    padding-right: 1rem;       /* 右侧留白，与线段隔开 */
+    color: var(--sec-text-color);
+    font-size: 0.9rem;
+    opacity: 1.0;
+}
+
+/* 暗色模式适配 */
+[data-theme="dark"] .post-content hr,
+[data-theme="dark"] .markdown-body hr {
+    background: linear-gradient(90deg, #435266, transparent);
+}
+[data-theme="dark"] .post-content hr::after,
+[data-theme="dark"] .markdown-body hr::after {
+    color: #6a7a8e;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+

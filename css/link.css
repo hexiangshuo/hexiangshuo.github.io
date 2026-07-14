@@ -1,6 +1,0 @@
-/* 文章内链接悬停放大 */
-.post-content a {
-    display: inline-block !important;
-    transition: all 0.1s ease !important;
-    text-decoration: none !important;  /* 统一去掉下划线，而不是只在悬停时 */
-}
