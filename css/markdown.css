@@ -36,7 +36,7 @@
     border: none;
     height: 2px;
     margin: 2rem 0 2rem 0;
-    background: linear-gradient(90deg, transparent 1.5rem, var(--line-color, #eaecef) 1.5rem, transparent);
+    background: linear-gradient(90deg, transparent 1.5rem, var(--line-color) 1.5rem, var(--line-color) 40%, transparent);
     position: relative;
     opacity: 0.7;
     overflow: visible;
@@ -53,19 +53,28 @@
     color: var(--sec-text-color);
     font-size: 0.9rem;
     opacity: 1.0;
+    transition: all 0.3s ease;  /* 添加过渡 */
+}
+
+.post-content hr:hover::after {
+    transform: translateY(-50%) translateX(8px);   /* 向右移动 */
 }
 
 /* 暗色模式适配 */
-[data-theme="dark"] .post-content hr,
-[data-theme="dark"] .markdown-body hr {
-    background: linear-gradient(90deg, #435266, transparent);
-}
-[data-theme="dark"] .post-content hr::after,
-[data-theme="dark"] .markdown-body hr::after {
-    color: #6a7a8e;
-}
 
 html {
     scroll-behavior: smooth;
 }
 
+/* ===== 选中文字样式 ===== */
+::selection {
+  background: rgba(48, 169, 222, 0.2);
+  color: inherit;
+}
+
+/* ===== SVG 图标对齐 ===== */
+.icon {
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
