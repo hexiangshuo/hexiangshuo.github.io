@@ -67,3 +67,11 @@ html {
   fill: currentColor;
   overflow: hidden;
 }
+
+/* 禁止选中 KaTeX 公式 */
+.katex {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+}
