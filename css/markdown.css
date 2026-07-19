@@ -76,3 +76,32 @@ html {
     -moz-user-select: none !important;
     -ms-user-select: none !important;
 }
+
+/* ===== 行内代码样式 ===== */
+
+/* 行内代码（非代码块内的 code） */
+.post-content code:not([class]) {
+    /* 背景色：极淡蓝灰 */
+    background-color: transparent;
+    border: 1px solid rgba(48, 94, 222, 0.3);
+    display: inline-block;
+}
+
+/* ===== 脚注返回按钮：符号替换 + 美化 ===== */
+
+/* 方法一：替换为其他 Unicode 符号 */
+.footnote-backref {
+    /* 替换符号：用 content 覆盖原有文字 */
+    font-size: 0;                      /* 隐藏原有文字 */
+}
+.footnote-backref::before {
+    content: "↩︎";                      /* 替换为 ↑ */
+    font-size: 1rem;                   /* 恢复字号 */
+    display: inline-block;
+    transition: all 0.25s ease;
+}
+
+/* 悬停效果 */
+.footnote-backref:hover::before {
+    transform: translateX(3px);        /* 向右滑动 */
+}
