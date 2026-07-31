@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>复变函数 · 网格变形可视化</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #fafafa;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            color: #111827;
+        }
+        .container {
+            max-width: 820px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);
+            padding: 28px 28px 24px 28px;
+            transition: box-shadow 0.2s;
+        }
+        .container:hover {
+            box-shadow: 0 8px 36px rgba(0, 0, 0, 0.06);
+        }
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 16px;
+            margin-bottom: 22px;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: #111827;
+            background: #f8fafc;
+            padding: 4px 16px 4px 14px;
+            border-radius: 40px;
+            border: 1px solid #eef2f6;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .header h1 span {
+            font-weight: 300;
+            color: #6b7280;
+            font-size: 16px;
+        }
+        .input-group {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 200px;
+            background: #f8fafc;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            padding: 0 18px 0 16px;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .input-group:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.10);
+            background: #ffffff;
+        }
+        .input-group label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #374151;
+            white-space: nowrap;
+        }
+        .input-group input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 11px 0;
+            font-size: 17px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            color: #111827;
+            outline: none;
+            min-width: 50px;
+            letter-spacing: 0.1px;
+        }
+        .input-group input::placeholder {
+            color: #9ca3af;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-weight: 300;
+            font-size: 15px;
+        }
+        .input-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            white-space: nowrap;
+            font-weight: 400;
+            padding-left: 4px;
+        }
+        .canvas-wrapper {
+            position: relative;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            touch-action: none;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+        }
+        .canvas-wrapper canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            background: #ffffff;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .info-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px 16px;
+            margin-top: 14px;
+            padding: 10px 18px 10px 20px;
+            background: #fafbfc;
+            border-radius: 40px;
+            border: 1px solid #eef2f6;
+            font-size: 14px;
+            color: #374151;
+            min-height: 48px;
+        }
+        .info-bar .coord {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            color: #1f2937;
+            background: #ffffff;
+            padding: 2px 16px;
+            border-radius: 30px;
+            border: 1px solid #e9edf2;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .info-bar .fval {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            color: #1f2937;
+            background: #ffffff;
+            padding: 2px 16px;
+            border-radius: 30px;
+            border: 1px solid #e9edf2;
+            display: inline-block;
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .info-bar .status {
+            font-size: 13px;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .info-bar .status .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            transition: background 0.3s;
+        }
+        .info-bar .status .dot.busy {
+            background: #f59e0b;
+            animation: pulse 0.7s ease-in-out infinite alternate;
+        }
+        .info-bar .status .dot.error {
+            background: #ef4444;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1.15); }
+        }
+        .info-bar .expr-badge {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            color: #4b5563;
+            background: #f1f4f9;
+            padding: 2px 16px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            display: inline-block;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ---- 控制面板 ---- */
+        .controls {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px 24px;
+            padding: 14px 20px;
+            background: #fafbfc;
+            border-radius: 40px;
+            border: 1px solid #eef2f6;
+        }
+        .controls .control-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .controls .control-item label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+        .controls .control-item input[type="range"] {
+            width: 120px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #d1d5db;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+        .controls .control-item input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .controls .control-item .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #1f2937;
+            min-width: 36px;
+            text-align: center;
+            background: #ffffff;
+            padding: 0 6px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .footer {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px 14px;
+            font-size: 13px;
+            color: #9ca3af;
+            border-top: 1px solid #f1f4f9;
+            padding-top: 16px;
+        }
+        .footer .presets {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .footer .presets button {
+            background: #f1f4f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            padding: 4px 16px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        .footer .presets button:hover {
+            background: #e9edf2;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .footer .presets button:active {
+            transform: translateY(0px);
+            background: #dce2ea;
+        }
+        .footer .help-text {
+            font-weight: 300;
+            letter-spacing: 0.2px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .footer .help-text code {
+            background: #f1f4f9;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #4b5563;
+            border: 1px solid #e2e8f0;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 16px 12px 18px 12px; }
+            .header { flex-direction: column; align-items: stretch; gap: 10px; }
+            .header h1 { font-size: 18px; justify-content: center; padding: 4px 12px; white-space: normal; }
+            .input-group { padding: 0 14px; }
+            .input-group input { font-size: 15px; padding: 10px 0; }
+            .input-hint { display: none; }
+            .info-bar { font-size: 13px; padding: 8px 14px; flex-direction: column; align-items: stretch; gap: 4px; border-radius: 16px; }
+            .info-bar .coord, .info-bar .fval, .info-bar .expr-badge { font-size: 13px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 12px; }
+            .controls { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; border-radius: 20px; }
+            .controls .control-item { justify-content: space-between; }
+            .controls .control-item input[type="range"] { flex: 1; }
+            .footer { flex-direction: column; align-items: stretch; gap: 8px; }
+            .footer .presets { justify-content: center; }
+            .footer .help-text { text-align: center; }
+        }
+        @media (max-width: 400px) {
+            .container { padding: 10px 6px 14px 6px; }
+            .header h1 { font-size: 16px; }
+            .input-group input { font-size: 14px; }
+            .footer .presets button { font-size: 12px; padding: 3px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1><span>ƒ</span> 网格变形</h1>
+            <div class="input-group">
+                <label>f(z) =</label>
+                <input type="text" id="functionInput" value="e^z" spellcheck="false" autofocus />
+                <span class="input-hint">e^z, sin, log, …</span>
+            </div>
+        </div>
+
+        <!-- 画布 -->
+        <div class="canvas-wrapper">
+            <canvas id="canvas" width="700" height="700"></canvas>
+        </div>
+
+        <!-- 信息栏 -->
+        <div class="info-bar">
+            <span class="coord" id="coordDisplay">z = —</span>
+            <span class="fval" id="fvalDisplay">f(z) = —</span>
+            <span class="status" id="statusDisplay">
+                <span class="dot" id="statusDot"></span>
+                <span id="statusText">就绪</span>
+            </span>
+            <span class="expr-badge" id="exprDisplay">e^z</span>
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="controls">
+            <div class="control-item">
+                <label>网格步长</label>
+                <input type="range" id="gridStepSlider" min="0.10" max="0.50" step="0.05" value="0.25" />
+                <span class="value" id="gridStepValue">0.25</span>
+            </div>
+            <div class="control-item">
+                <label>显示范围</label>
+                <input type="range" id="rangeSlider" min="1.0" max="6.0" step="0.1" value="3.2" />
+                <span class="value" id="rangeValue">3.2</span>
+            </div>
+            <div class="control-item">
+                <label>采样点数</label>
+                <input type="range" id="samplesSlider" min="100" max="500" step="50" value="300" />
+                <span class="value" id="samplesValue">300</span>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            <div class="presets">
+                <button data-expr="e^z">e^z</button>
+                <button data-expr="sin(z)">sin(z)</button>
+                <button data-expr="cos(z)">cos(z)</button>
+                <button data-expr="z^2">z²</button>
+                <button data-expr="z^2 - 1">z²−1</button>
+                <button data-expr="1/z">1/z</button>
+                <button data-expr="log(z)">log(z)</button>
+                <button data-expr="sqrt(z)">√z</button>
+                <button data-expr="z^3 - z">z³−z</button>
+            </div>
+            <span class="help-text"><code>z</code> 为复数 · 悬停查看值</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ---- DOM 引用 ----
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const input = document.getElementById('functionInput');
+            const coordDisplay = document.getElementById('coordDisplay');
+            const fvalDisplay = document.getElementById('fvalDisplay');
+            const statusText = document.getElementById('statusText');
+            const statusDot = document.getElementById('statusDot');
+            const exprDisplay = document.getElementById('exprDisplay');
+
+            // ---- 控制 DOM ----
+            const gridStepSlider = document.getElementById('gridStepSlider');
+            const gridStepValue = document.getElementById('gridStepValue');
+            const rangeSlider = document.getElementById('rangeSlider');
+            const rangeValue = document.getElementById('rangeValue');
+            const samplesSlider = document.getElementById('samplesSlider');
+            const samplesValue = document.getElementById('samplesValue');
+
+            // ---- 状态 ----
+            const SIZE = 700;
+            let currentExpr = 'e^z';
+            let compiledFn = null;
+            let hasValidFn = false;
+            let isComputing = false;
+            let abortFlag = false;
+            let mousePx = null;
+            let mousePy = null;
+
+            // 控制参数（全局）
+            let params = {
+                gridStep: 0.25,
+                range: 3.2,
+                samples: 300
+            };
+
+            // ---- 工具函数 ----
+            function pixelToComplex(px, py, range) {
+                const half = range;
+                const step = (2 * range) / SIZE;
+                const x = -half + px * step;
+                const y = half - py * step;
+                return { x, y };
+            }
+
+            function complexToPixel(re, im, range) {
+                const half = range;
+                const step = (2 * range) / SIZE;
+                const px = (re + half) / step;
+                const py = (half - im) / step;
+                return { px, py };
+            }
+
+            function setStatus(text, type) {
+                statusText.textContent = text;
+                statusDot.className = 'dot';
+                if (type === 'busy') statusDot.classList.add('busy');
+                else if (type === 'error') statusDot.classList.add('error');
+            }
+
+            // ---- 绘制核心 ----
+            function drawGrid(fn, range, gridStep, samples) {
+                const half = range;
+                const step = (2 * range) / SIZE;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, SIZE, SIZE);
+
+                // ---- 原始网格 (灰色虚线) ----
+                ctx.save();
+                ctx.strokeStyle = '#d1d5db';
+                ctx.lineWidth = 0.6;
+                ctx.setLineDash([3, 5]);
+
+                const start = -Math.floor(range) + gridStep;
+                const end = Math.floor(range) - gridStep;
+
+                for (let y = start; y <= end; y += gridStep) {
+                    if (Math.abs(y) < 0.01) continue;
+                    const py = (half - y) / step;
+                    if (py < 0 || py > SIZE) continue;
+                    ctx.beginPath();
+                    ctx.moveTo(0, py);
+                    ctx.lineTo(SIZE, py);
+                    ctx.stroke();
+                }
+                for (let x = start; x <= end; x += gridStep) {
+                    if (Math.abs(x) < 0.01) continue;
+                    const px = (x + half) / step;
+                    if (px < 0 || px > SIZE) continue;
+                    ctx.beginPath();
+                    ctx.moveTo(px, 0);
+                    ctx.lineTo(px, SIZE);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // ---- 坐标轴 (红色) ----
+                ctx.save();
+                ctx.strokeStyle = '#dc2626';
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([]);
+                const py0 = half / step;
+                if (py0 >= 0 && py0 <= SIZE) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, py0);
+                    ctx.lineTo(SIZE, py0);
+                    ctx.stroke();
+                }
+                const px0 = half / step;
+                if (px0 >= 0 && px0 <= SIZE) {
+                    ctx.beginPath();
+                    ctx.moveTo(px0, 0);
+                    ctx.lineTo(px0, SIZE);
+                    ctx.stroke();
+                }
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath();
+                ctx.arc(px0, py0, 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.restore();
+
+                if (!fn) return;
+
+                // ---- 变形网格 (黑色实线) ----
+                const stepSize = (2 * range) / samples;
+
+                function computeMappedPoints(constVal, isHorizontal) {
+                    const points = [];
+                    for (let i = 0; i <= samples; i++) {
+                        const t = -range + i * stepSize;
+                        let z;
+                        if (isHorizontal) z = math.complex(t, constVal);
+                        else z = math.complex(constVal, t);
+                        try {
+                            const scope = { z: z };
+                            const result = fn.evaluate(scope);
+                            let re, im;
+                            if (math.isComplex(result)) {
+                                re = result.re;
+                                im = result.im;
+                            } else if (typeof result === 'number') {
+                                re = result;
+                                im = 0;
+                            } else {
+                                re = NaN;
+                                im = NaN;
+                            }
+                            if (isFinite(re) && isFinite(im)) {
+                                const p = complexToPixel(re, im, range);
+                                // 软裁剪，防止飞线
+                                const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+                                points.push({
+                                    px: clamp(p.px, -30, SIZE + 30),
+                                    py: clamp(p.py, -30, SIZE + 30)
+                                });
+                            } else {
+                                points.push(null);
+                            }
+                        } catch (e) {
+                            points.push(null);
+                        }
+                    }
+                    return points;
+                }
+
+                ctx.save();
+                ctx.strokeStyle = '#111827';
+                ctx.lineWidth = 1.8;
+                ctx.setLineDash([]);
+
+                // 水平线映射
+                for (let y = start; y <= end; y += gridStep) {
+                    if (Math.abs(y) < 0.01) continue;
+                    const pts = computeMappedPoints(y, true);
+                    ctx.beginPath();
+                    let started = false;
+                    for (let i = 0; i < pts.length; i++) {
+                        const p = pts[i];
+                        if (p) {
+                            if (!started) {
+                                ctx.moveTo(p.px, p.py);
+                                started = true;
+                            } else {
+                                ctx.lineTo(p.px, p.py);
+                            }
+                        } else {
+                            started = false;
+                        }
+                    }
+                    ctx.stroke();
+                }
+
+                // 垂直线映射
+                for (let x = start; x <= end; x += gridStep) {
+                    if (Math.abs(x) < 0.01) continue;
+                    const pts = computeMappedPoints(x, false);
+                    ctx.beginPath();
+                    let started = false;
+                    for (let i = 0; i < pts.length; i++) {
+                        const p = pts[i];
+                        if (p) {
+                            if (!started) {
+                                ctx.moveTo(p.px, p.py);
+                                started = true;
+                            } else {
+                                ctx.lineTo(p.px, p.py);
+                            }
+                        } else {
+                            started = false;
+                        }
+                    }
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            // ---- 渲染入口 ----
+            function render(expr) {
+                if (isComputing) {
+                    abortFlag = true;
+                    const wait = () => {
+                        if (isComputing) {
+                            setTimeout(wait, 40);
+                        } else {
+                            requestAnimationFrame(() => render(expr));
+                        }
+                    };
+                    wait();
+                    return;
+                }
+
+                const exprStr = expr.trim() || 'z';
+                currentExpr = exprStr;
+                exprDisplay.textContent = exprStr;
+
+                // 编译表达式
+                let fn;
+                try {
+                    const node = math.parse(exprStr);
+                    fn = node.compile();
+                } catch (err) {
+                    setStatus('语法错误: ' + err.message, 'error');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, SIZE, SIZE);
+                    ctx.fillStyle = '#b91c1c';
+                    ctx.font = '18px "Inter", "Segoe UI", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('⚠ ' + err.message, SIZE / 2, SIZE / 2);
+                    compiledFn = null;
+                    hasValidFn = false;
+                    fvalDisplay.textContent = 'f(z) = —';
+                    return;
+                }
+
+                // 编译成功
+                compiledFn = fn;
+                hasValidFn = true;
+
+                // 立即刷新鼠标信息（如果鼠标在画布上）
+                if (mousePx !== null && mousePy !== null) {
+                    updateMouseInfo(mousePx, mousePy);
+                }
+
+                setStatus('渲染中…', 'busy');
+                isComputing = true;
+                abortFlag = false;
+
+                // 使用当前控制参数绘制
+                const range = params.range;
+                const gridStep = params.gridStep;
+                const samples = params.samples;
+
+                requestAnimationFrame(() => {
+                    if (abortFlag) {
+                        isComputing = false;
+                        setStatus('已取消', 'idle');
+                        return;
+                    }
+                    drawGrid(fn, range, gridStep, samples);
+                    isComputing = false;
+                    setStatus('就绪', 'idle');
+                    // 重新刷新鼠标信息
+                    if (mousePx !== null && mousePy !== null) {
+                        updateMouseInfo(mousePx, mousePy);
+                    }
+                });
+            }
+
+            // ---- 仅重绘（参数变化时） ----
+            function redraw() {
+                if (!hasValidFn || !compiledFn) return;
+                const range = params.range;
+                const gridStep = params.gridStep;
+                const samples = params.samples;
+                drawGrid(compiledFn, range, gridStep, samples);
+                if (mousePx !== null && mousePy !== null) {
+                    updateMouseInfo(mousePx, mousePy);
+                }
+            }
+
+            // ---- 鼠标信息更新 ----
+            function updateMouseInfo(px, py) {
+                const range = params.range;
+                const { x, y } = pixelToComplex(px, py, range);
+                mousePx = px;
+                mousePy = py;
+                const zStr = `${x.toFixed(4)} ${y >= 0 ? '+' : '-'} ${Math.abs(y).toFixed(4)}i`;
+                coordDisplay.textContent = `z = ${zStr}`;
+
+                if (!hasValidFn || !compiledFn) {
+                    fvalDisplay.textContent = 'f(z) = —';
+                    return;
+                }
+
+                try {
+                    const z = math.complex(x, y);
+                    const scope = { z: z };
+                    const result = compiledFn.evaluate(scope);
+                    if (result === undefined || result === null || !math.isNumeric(result)) {
+                        fvalDisplay.textContent = 'f(z) = —';
+                        return;
+                    }
+                    let fStr;
+                    if (math.isComplex(result)) {
+                        const re = result.re;
+                        const im = result.im;
+                        if (Math.abs(im) < 1e-12) {
+                            fStr = re.toFixed(4);
+                        } else {
+                            fStr = `${re.toFixed(4)} ${im >= 0 ? '+' : '-'} ${Math.abs(im).toFixed(4)}i`;
+                        }
+                    } else {
+                        fStr = String(result);
+                    }
+                    fvalDisplay.textContent = `f(z) = ${fStr}`;
+                } catch (err) {
+                    fvalDisplay.textContent = `f(z) = ⚠`;
+                }
+            }
+
+            // ---- 事件绑定 ----
+            // 输入框
+            function handleInput() {
+                const val = input.value;
+                if (val !== currentExpr) {
+                    render(val);
+                }
+            }
+            input.addEventListener('input', handleInput);
+
+            // 鼠标/触摸移动
+            function onCanvasMove(e) {
+                const { px, py } = getCanvasCoords(e);
+                updateMouseInfo(px, py);
+            }
+
+            function getCanvasCoords(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                const px = (clientX - rect.left) * scaleX;
+                const py = (clientY - rect.top) * scaleY;
+                return {
+                    px: Math.min(Math.max(px, 0), canvas.width - 1),
+                    py: Math.min(Math.max(py, 0), canvas.height - 1)
+                };
+            }
+
+            canvas.addEventListener('mousemove', onCanvasMove);
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                onCanvasMove(e);
+            }, { passive: false });
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                onCanvasMove(e);
+            }, { passive: false });
+
+            canvas.addEventListener('mouseleave', function() {
+                coordDisplay.textContent = 'z = —';
+                fvalDisplay.textContent = 'f(z) = —';
+                mousePx = null;
+                mousePy = null;
+            });
+            canvas.addEventListener('touchend', function() {
+                coordDisplay.textContent = 'z = —';
+                fvalDisplay.textContent = 'f(z) = —';
+                mousePx = null;
+                mousePy = null;
+            });
+
+            // 预设按钮
+            document.querySelectorAll('.presets button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const expr = this.dataset.expr;
+                    input.value = expr;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur();
+                }
+            });
+
+            // ---- 控制参数事件 ----
+            gridStepSlider.addEventListener('input', function() {
+                const val = parseFloat(this.value);
+                gridStepValue.textContent = val.toFixed(2);
+                params.gridStep = val;
+                redraw();
+            });
+            rangeSlider.addEventListener('input', function() {
+                const val = parseFloat(this.value);
+                rangeValue.textContent = val.toFixed(1);
+                params.range = val;
+                // 范围变化需要重新计算所有像素映射，所以重绘
+                redraw();
+                // 同时更新鼠标信息（如果鼠标在画布上）
+                if (mousePx !== null && mousePy !== null) {
+                    updateMouseInfo(mousePx, mousePy);
+                }
+            });
+            samplesSlider.addEventListener('input', function() {
+                const val = parseInt(this.value);
+                samplesValue.textContent = val;
+                params.samples = val;
+                redraw();
+            });
+
+            // ---- 初始化 ----
+            function init() {
+                if (typeof math === 'undefined') {
+                    document.getElementById('statusText').textContent = '⚠️ 无法加载 mathjs';
+                    document.getElementById('statusDot').className = 'dot error';
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillRect(0, 0, SIZE, SIZE);
+                    ctx.fillStyle = '#b91c1c';
+                    ctx.font = '20px "Inter", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('请刷新页面或检查网络', SIZE/2, SIZE/2);
+                    return;
+                }
+                // 直接渲染 e^z，不依赖事件
+                input.value = 'e^z';
+                render('e^z');
+            }
+
+            if (document.readyState === 'complete') {
+                init();
+            } else {
+                window.addEventListener('load', init);
+            }
+
+            // ---- 窗口自适应重绘 ----
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (hasValidFn && compiledFn) {
+                        redraw();
+                    }
+                }, 150);
+            });
+
+        })();
+    </script>
+
+</body>
+</html>

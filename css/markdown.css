@@ -84,6 +84,7 @@ html {
     /* 背景色：极淡蓝灰 */
     background-color: transparent;
     border: 1px solid rgba(48, 94, 222, 0.3);
+    color: rgba(48, 150, 222, 0.9);
     display: inline-block;
 }
 

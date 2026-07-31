@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var container = document.createElement('a');
     container.id = 'hitokoto-container';
     container.href = '#';
-    container.target = '_blank';
+    container.target = '_self';
     container.style.cssText = `
         font-size: 0.85rem;
         margin: 0;
@@ -72,9 +72,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== 加载一言数据 =====
     function loadHitokoto() {
+        // ---- 1. 禁用刷新按钮 ----
         refreshBtn.disabled = true;
         refreshBtn.style.opacity = '0.3';
         refreshBtn.style.cursor = 'not-allowed';
+
+        // ---- 2. 禁用容器跳转（刷新过程中不可点击） ----
+        container.href = '#';
+        container.style.cursor = 'default';
+        container.style.textDecoration = 'none';
         container.textContent = '✨ 加载一言中...';
 
         fetch(API_URL)
@@ -91,14 +97,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 container.textContent = text;
                 if (data.uuid) {
                     container.href = 'https://hitokoto.cn?uuid=' + data.uuid;
+                    container.style.cursor = 'pointer';
+                    container.style.textDecoration = 'none';
                 } else {
                     container.href = '#';
                     container.style.cursor = 'default';
                     container.style.textDecoration = 'none';
                 }
-                // ===== 归位：重置颜色和状态 =====
+                // ---- 恢复刷新按钮 ----
                 refreshBtn.disabled = false;
-                refreshBtn.style.color = '#888';      // ← 颜色归位
+                refreshBtn.style.color = '#888';
                 refreshBtn.style.opacity = '0.5';
                 refreshBtn.style.cursor = 'pointer';
             })
@@ -107,9 +115,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 container.textContent = '加载失败，请刷新';
                 container.href = '#';
                 container.style.cursor = 'default';
-                // ===== 归位：重置颜色和状态 =====
+                container.style.textDecoration = 'none';
+                // ---- 恢复刷新按钮 ----
                 refreshBtn.disabled = false;
-                refreshBtn.style.color = '#888';      // ← 颜色归位
+                refreshBtn.style.color = '#888';
                 refreshBtn.style.opacity = '0.5';
                 refreshBtn.style.cursor = 'pointer';
             });
