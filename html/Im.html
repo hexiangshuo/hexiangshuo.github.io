@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>复变函数 · 网格变形可视化</title>
+    <title>复变函数 · 网格变形 + 参数 s</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js">
     </script>
     <style>
-        /* 样式与之前完全相同，为节省篇幅此处省略，实际使用时请保留完整样式 */
+        /* ---------- 样式（与之前相同） ---------- */
         * {
             margin: 0;
             padding: 0;
@@ -95,7 +95,6 @@
             color: #111827;
             outline: none;
             min-width: 50px;
-            letter-spacing: 0.1px;
         }
         .input-group input::placeholder {
             color: #9ca3af;
@@ -107,7 +106,6 @@
             font-size: 12px;
             color: #9ca3af;
             white-space: nowrap;
-            font-weight: 400;
             padding-left: 4px;
         }
         .canvas-wrapper {
@@ -144,7 +142,7 @@
             min-height: 48px;
         }
         .info-bar .coord {
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 14px;
             color: #1f2937;
             background: #ffffff;
@@ -155,7 +153,7 @@
             white-space: nowrap;
         }
         .info-bar .fval {
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 14px;
             color: #1f2937;
             background: #ffffff;
@@ -192,17 +190,11 @@
             background: #ef4444;
         }
         @keyframes pulse {
-            0% {
-                opacity: 0.4;
-                transform: scale(0.85);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1.15);
-            }
+            0% { opacity: 0.4; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1.15); }
         }
         .info-bar .expr-badge {
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 14px;
             color: #4b5563;
             background: #f1f4f9;
@@ -215,6 +207,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+
         .controls {
             margin-top: 16px;
             display: flex;
@@ -286,6 +279,18 @@
             min-width: 40px;
             text-align: center;
         }
+        .s-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #1f2937;
+            background: #ffffff;
+            padding: 2px 14px;
+            border-radius: 30px;
+            border: 1px solid #e9edf2;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
         .footer {
             margin-top: 16px;
             display: flex;
@@ -309,7 +314,7 @@
             border-radius: 30px;
             padding: 4px 16px;
             font-size: 13px;
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', monospace;
             color: #374151;
             cursor: pointer;
             transition: all 0.15s;
@@ -338,455 +343,268 @@
             font-size: 12px;
             color: #4b5563;
             border: 1px solid #e2e8f0;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-family: 'JetBrains Mono', monospace;
         }
+
         @media (max-width: 640px) {
-            .container {
-                padding: 16px 12px 18px 12px;
-            }
-            .header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-            .header h1 {
-                font-size: 18px;
-                justify-content: center;
-                padding: 4px 12px;
-                white-space: normal;
-            }
-            .input-group {
-                padding: 0 14px;
-            }
-            .input-group input {
-                font-size: 15px;
-                padding: 10px 0;
-            }
-            .input-hint {
-                display: none;
-            }
-            .info-bar {
-                font-size: 13px;
-                padding: 8px 14px;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 4px;
-                border-radius: 16px;
-            }
-            .info-bar .coord,
-            .info-bar .fval,
-            .info-bar .expr-badge {
-                font-size: 13px;
-                max-width: 100%;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                padding: 2px 12px;
-            }
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-                padding: 14px;
-                border-radius: 20px;
-            }
-            .controls .control-item {
-                justify-content: space-between;
-            }
-            .controls .control-item input[type="range"] {
-                flex: 1;
-            }
-            .footer {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .footer .presets {
-                justify-content: center;
-            }
-            .footer .help-text {
-                text-align: center;
-            }
+            .container { padding: 16px 12px 18px 12px; }
+            .header { flex-direction: column; align-items: stretch; gap: 10px; }
+            .header h1 { font-size: 18px; justify-content: center; padding: 4px 12px; white-space: normal; }
+            .input-group { padding: 0 14px; }
+            .input-group input { font-size: 15px; padding: 10px 0; }
+            .input-hint { display: none; }
+            .info-bar { font-size: 13px; padding: 8px 14px; flex-direction: column; align-items: stretch; gap: 4px; border-radius: 16px; }
+            .info-bar .coord, .info-bar .fval, .info-bar .expr-badge { font-size: 13px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 12px; }
+            .controls { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; border-radius: 20px; }
+            .controls .control-item { justify-content: space-between; }
+            .controls .control-item input[type="range"] { flex: 1; }
+            .footer { flex-direction: column; align-items: stretch; gap: 8px; }
+            .footer .presets { justify-content: center; }
+            .footer .help-text { text-align: center; }
         }
         @media (max-width: 400px) {
-            .container {
-                padding: 10px 6px 14px 6px;
-            }
-            .header h1 {
-                font-size: 16px;
-            }
-            .input-group input {
-                font-size: 14px;
-            }
-            .footer .presets button {
-                font-size: 12px;
-                padding: 3px 12px;
-            }
+            .container { padding: 10px 6px 14px 6px; }
+            .header h1 { font-size: 16px; }
+            .input-group input { font-size: 14px; }
+            .footer .presets button { font-size: 12px; padding: 3px 12px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1><span>ƒ</span> 网格变形</h1>
-            <div class="input-group">
-                <label>f(z) =</label>
-                <input type="text" id="functionInput" value="exp(z)" spellcheck="false" autofocus />
-                <span class="input-hint">exp(z), sin, log, …</span>
-            </div>
-        </div>
-
-        <div class="canvas-wrapper">
-            <canvas id="canvas" width="700" height="700"></canvas>
-        </div>
-
-        <div class="info-bar">
-            <span class="coord" id="coordDisplay">z = —</span>
-            <span class="fval" id="fvalDisplay">f(z) = —</span>
-            <span class="status" id="statusDisplay">
-                <span class="dot" id="statusDot"></span>
-                <span id="statusText">就绪</span>
-            </span>
-            <span class="expr-badge" id="exprDisplay">exp(z)</span>
-        </div>
-
-        <div class="controls">
-            <div class="control-item">
-                <label>网格步长</label>
-                <input type="range" id="gridStepSlider" min="0.10" max="0.50" step="0.05" value="0.25" />
-                <span class="value" id="gridStepValue">0.25</span>
-            </div>
-            <div class="control-item">
-                <label>采样点数</label>
-                <input type="range" id="samplesSlider" min="100" max="500" step="50" value="300" />
-                <span class="value" id="samplesValue">300</span>
-            </div>
-            <div class="range-display">
-                <label>显示范围</label>
-                <span id="rangeDisplay">3.2</span>
-                <span style="font-size:12px;color:#9ca3af;">(滚轮缩放)</span>
-            </div>
-        </div>
-
-        <div class="footer">
-            <div class="presets">
-                <button data-expr="exp(z)">exp(z)</button>
-                <button data-expr="sin(z)">sin(z)</button>
-                <button data-expr="cos(z)">cos(z)</button>
-                <button data-expr="z^2">z²</button>
-                <button data-expr="z^2 - 1">z²−1</button>
-                <button data-expr="1/z">1/z</button>
-                <button data-expr="log(z)">log(z)</button>
-                <button data-expr="sqrt(z)">√z</button>
-                <button data-expr="z^3 - z">z³−z</button>
-            </div>
-            <span class="help-text"><code>z</code> 为复数 · 红点: z, 绿点: f(z) · 滚轮缩放</span>
+<div class="container">
+    <div class="header">
+        <h1><span>ƒ</span> 网格变形</h1>
+        <div class="input-group">
+            <label>f(z) =</label>
+            <input type="text" id="functionInput" value="z^2 + s" spellcheck="false" autofocus />
+            <span class="input-hint">可用变量 s</span>
         </div>
     </div>
 
-    <script>
-        (function() {
-            'use strict';
+    <div class="canvas-wrapper">
+        <canvas id="canvas" width="700" height="700"></canvas>
+    </div>
 
-            // ---- DOM ----
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            const input = document.getElementById('functionInput');
-            const coordDisplay = document.getElementById('coordDisplay');
-            const fvalDisplay = document.getElementById('fvalDisplay');
-            const statusText = document.getElementById('statusText');
-            const statusDot = document.getElementById('statusDot');
-            const exprDisplay = document.getElementById('exprDisplay');
+    <div class="info-bar">
+        <span class="coord" id="coordDisplay">z = —</span>
+        <span class="fval" id="fvalDisplay">f(z) = —</span>
+        <span class="status" id="statusDisplay">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">就绪</span>
+        </span>
+        <span class="expr-badge" id="exprDisplay">z^2 + s</span>
+    </div>
 
-            const gridStepSlider = document.getElementById('gridStepSlider');
-            const gridStepValue = document.getElementById('gridStepValue');
-            const samplesSlider = document.getElementById('samplesSlider');
-            const samplesValue = document.getElementById('samplesValue');
-            const rangeDisplay = document.getElementById('rangeDisplay');
+    <div class="controls">
+        <div class="control-item">
+            <label>网格步长</label>
+            <input type="range" id="gridStepSlider" min="0.10" max="0.50" step="0.05" value="0.25" />
+            <span class="value" id="gridStepValue">0.25</span>
+        </div>
+        <div class="control-item">
+            <label>采样点数</label>
+            <input type="range" id="samplesSlider" min="100" max="500" step="50" value="300" />
+            <span class="value" id="samplesValue">300</span>
+        </div>
+        <div class="range-display">
+            <label>显示范围</label>
+            <span id="rangeDisplay">3.2</span>
+            <span style="font-size:12px;color:#9ca3af;">(滚轮缩放)</span>
+        </div>
+        <div class="control-item">
+            <label>Re(s)</label>
+            <input type="range" id="sReSlider" min="-5" max="5" step="0.1" value="0" />
+            <span class="value" id="sReValue">0.0</span>
+        </div>
+        <div class="control-item">
+            <label>Im(s)</label>
+            <input type="range" id="sImSlider" min="-5" max="5" step="0.1" value="0" />
+            <span class="value" id="sImValue">0.0</span>
+        </div>
+        <span class="s-display" id="sDisplay">s = 0.0 + 0.0i</span>
+    </div>
 
-            const SIZE = 700;
+    <div class="footer">
+        <div class="presets">
+            <button data-expr="exp(z)">exp(z)</button>
+            <button data-expr="sin(z)">sin(z)</button>
+            <button data-expr="cos(z)">cos(z)</button>
+            <button data-expr="z^2">z²</button>
+            <button data-expr="z^2 - 1">z²−1</button>
+            <button data-expr="1/z">1/z</button>
+            <button data-expr="log(z)">log(z)</button>
+            <button data-expr="sqrt(z)">√z</button>
+            <button data-expr="z^3 - z">z³−z</button>
+            <button data-expr="z^2 + s">z² + s</button>
+        </div>
+        <span class="help-text"><code>z</code> 为复数 · 红点: z, 绿点: f(z) · 滚轮缩放 · 可用变量 <code>s</code></span>
+    </div>
+</div>
 
-            // ---- 状态 ----
-            let compiledFn = null;
-            let isReady = false;
-            let isComputing = false;
-            let abortFlag = false;
-            let mousePx = null;
-            let mousePy = null;
-            let lastMousePx = -1;
-            let lastMousePy = -1;
+<script>
+    (function() {
+        'use strict';
 
-            let pendingRaf = null;
-            let wheelTimeout = null;
+        // ---- DOM ----
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const input = document.getElementById('functionInput');
+        const coordDisplay = document.getElementById('coordDisplay');
+        const fvalDisplay = document.getElementById('fvalDisplay');
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        const exprDisplay = document.getElementById('exprDisplay');
 
-            let params = {
-                gridStep: 0.25,
-                range: 3.2,
-                samples: 300
-            };
+        const gridStepSlider = document.getElementById('gridStepSlider');
+        const gridStepValue = document.getElementById('gridStepValue');
+        const samplesSlider = document.getElementById('samplesSlider');
+        const samplesValue = document.getElementById('samplesValue');
+        const rangeDisplay = document.getElementById('rangeDisplay');
 
-            const offCanvas = document.createElement('canvas');
-            offCanvas.width = SIZE;
-            offCanvas.height = SIZE;
-            const offCtx = offCanvas.getContext('2d');
+        const sReSlider = document.getElementById('sReSlider');
+        const sImSlider = document.getElementById('sImSlider');
+        const sReValue = document.getElementById('sReValue');
+        const sImValue = document.getElementById('sImValue');
+        const sDisplay = document.getElementById('sDisplay');
 
-            // ---- 工具 ----
-            function pixelToComplex(px, py, range) {
-                const half = range;
-                const step = (2 * range) / SIZE;
-                return { x: -half + px * step, y: half - py * step };
+        const SIZE = 700;
+
+        // ---- 状态 ----
+        let compiledFn = null;
+        let isReady = false;
+        let isComputing = false;
+        let abortFlag = false;
+        let mousePx = null;
+        let mousePy = null;
+        let lastMousePx = -1;
+        let lastMousePy = -1;
+
+        let wheelTimeout = null;
+
+        let sRe = 0.0;
+        let sIm = 0.0;
+
+        let params = {
+            gridStep: 0.25,
+            range: 3.2,
+            samples: 300
+        };
+
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = SIZE;
+        offCanvas.height = SIZE;
+        const offCtx = offCanvas.getContext('2d');
+
+        // ---- 工具 ----
+        function pixelToComplex(px, py, range) {
+            const half = range;
+            const step = (2 * range) / SIZE;
+            return { x: -half + px * step, y: half - py * step };
+        }
+
+        function complexToPixel(re, im, range) {
+            const half = range;
+            const step = (2 * range) / SIZE;
+            return { px: (re + half) / step, py: (half - im) / step };
+        }
+
+        function setStatus(text, type) {
+            statusText.textContent = text;
+            statusDot.className = 'dot';
+            if (type === 'busy') statusDot.classList.add('busy');
+            else if (type === 'error') statusDot.classList.add('error');
+        }
+
+        // ---- 绘制网格到离屏 ----
+        function drawGridToOffscreen(fn, range, gridStep, samples, sRe, sIm) {
+            const half = range;
+            const step = (2 * range) / SIZE;
+
+            offCtx.fillStyle = '#ffffff';
+            offCtx.fillRect(0, 0, SIZE, SIZE);
+
+            const maxK = Math.floor(range / gridStep);
+            const values = [];
+            for (let k = -maxK; k <= maxK; k++) {
+                values.push(k * gridStep);
             }
 
-            function complexToPixel(re, im, range) {
-                const half = range;
-                const step = (2 * range) / SIZE;
-                return { px: (re + half) / step, py: (half - im) / step };
-            }
-
-            function setStatus(text, type) {
-                statusText.textContent = text;
-                statusDot.className = 'dot';
-                if (type === 'busy') statusDot.classList.add('busy');
-                else if (type === 'error') statusDot.classList.add('error');
-            }
-
-            // ---- 绘制网格到离屏 ----
-            function drawGridToOffscreen(fn, range, gridStep, samples) {
-                const half = range;
-                const step = (2 * range) / SIZE;
-
-                offCtx.fillStyle = '#ffffff';
-                offCtx.fillRect(0, 0, SIZE, SIZE);
-
-                // ---- 原始网格 (灰色虚线) ----
-                // ★ 修正：基于整数倍步长生成网格线，保证包含0且对称
-                const maxK = Math.floor(range / gridStep);
-                const values = [];
-                for (let k = -maxK; k <= maxK; k++) {
-                    values.push(k * gridStep);
-                }
-
-                // 水平线 (y = const)
-                for (let y of values) {
-                    const py = (half - y) / step;
-                    if (py < 0 || py > SIZE) continue;
-                    const isAxis = Math.abs(y) < 0.01;
-                    if (isAxis) {
-                        offCtx.save();
-                        offCtx.strokeStyle = '#2563eb';
-                        offCtx.lineWidth = 1.8;
-                        offCtx.setLineDash([]);
-                        offCtx.globalAlpha = 0.7;
-                        offCtx.beginPath();
-                        offCtx.moveTo(0, py);
-                        offCtx.lineTo(SIZE, py);
-                        offCtx.stroke();
-                        offCtx.restore();
-                    } else {
-                        offCtx.save();
-                        offCtx.strokeStyle = '#d1d5db';
-                        offCtx.lineWidth = 1.0;
-                        offCtx.setLineDash([3, 5]);
-                        offCtx.beginPath();
-                        offCtx.moveTo(0, py);
-                        offCtx.lineTo(SIZE, py);
-                        offCtx.stroke();
-                        offCtx.restore();
-                    }
-                }
-
-                // 垂直线 (x = const)
-                for (let x of values) {
-                    const px = (x + half) / step;
-                    if (px < 0 || px > SIZE) continue;
-                    const isAxis = Math.abs(x) < 0.01;
-                    if (isAxis) {
-                        offCtx.save();
-                        offCtx.strokeStyle = '#2563eb';
-                        offCtx.lineWidth = 1.8;
-                        offCtx.setLineDash([]);
-                        offCtx.globalAlpha = 0.7;
-                        offCtx.beginPath();
-                        offCtx.moveTo(px, 0);
-                        offCtx.lineTo(px, SIZE);
-                        offCtx.stroke();
-                        offCtx.restore();
-                    } else {
-                        offCtx.save();
-                        offCtx.strokeStyle = '#d1d5db';
-                        offCtx.lineWidth = 1.0;
-                        offCtx.setLineDash([3, 5]);
-                        offCtx.beginPath();
-                        offCtx.moveTo(px, 0);
-                        offCtx.lineTo(px, SIZE);
-                        offCtx.stroke();
-                        offCtx.restore();
-                    }
-                }
-
-                // ---- 坐标轴 (红色实线) ----
+            // ---- 原始网格 (灰色虚线) ----
+            for (let y of values) {
+                const py = (half - y) / step;
+                if (py < 0 || py > SIZE) continue;
+                const isAxis = Math.abs(y) < 0.01;
                 offCtx.save();
-                offCtx.strokeStyle = '#dc2626';
-                offCtx.lineWidth = 1.8;
-                offCtx.setLineDash([]);
-                const py0 = half / step;
-                if (py0 >= 0 && py0 <= SIZE) {
-                    offCtx.beginPath();
-                    offCtx.moveTo(0, py0);
-                    offCtx.lineTo(SIZE, py0);
-                    offCtx.stroke();
-                }
-                const px0 = half / step;
-                if (px0 >= 0 && px0 <= SIZE) {
-                    offCtx.beginPath();
-                    offCtx.moveTo(px0, 0);
-                    offCtx.lineTo(px0, SIZE);
-                    offCtx.stroke();
-                }
-                offCtx.fillStyle = '#dc2626';
+                offCtx.strokeStyle = isAxis ? '#2563eb' : '#d1d5db';
+                offCtx.lineWidth = isAxis ? 1.8 : 1.0;
+                offCtx.setLineDash(isAxis ? [] : [3, 5]);
+                if (isAxis) offCtx.globalAlpha = 0.7;
                 offCtx.beginPath();
-                offCtx.arc(px0, py0, 4, 0, 2 * Math.PI);
-                offCtx.fill();
-                offCtx.restore();
-
-                if (!fn) return;
-
-                // ---- 变形网格 (黑色实线) ----
-                const stepSize = (2 * range) / samples;
-                const MAX_DIST = 200; // 距离阈值，可调
-
-                function computeMappedPoints(constVal, isHorizontal) {
-                    const points = [];
-                    for (let i = 0; i <= samples; i++) {
-                        const t = -range + i * stepSize;
-                        let z;
-                        if (isHorizontal) z = math.complex(t, constVal);
-                        else z = math.complex(constVal, t);
-                        try {
-                            const scope = { z: z };
-                            const result = fn.evaluate(scope);
-                            let re, im;
-                            if (math.isComplex(result)) {
-                                re = result.re;
-                                im = result.im;
-                            } else if (typeof result === 'number') {
-                                re = result;
-                                im = 0;
-                            } else if (result && typeof result === 'object' && 're' in result && 'im' in result) {
-                                re = result.re;
-                                im = result.im;
-                            } else {
-                                re = NaN;
-                                im = NaN;
-                            }
-                            if (isFinite(re) && isFinite(im) && Math.abs(re) < 1e6 && Math.abs(im) < 1e6) {
-                                const p = complexToPixel(re, im, range);
-                                const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
-                                points.push({
-                                    px: clamp(p.px, -30, SIZE + 30),
-                                    py: clamp(p.py, -30, SIZE + 30)
-                                });
-                            } else {
-                                points.push(null);
-                            }
-                        } catch (e) {
-                            points.push(null);
-                        }
-                    }
-                    return points;
-                }
-
-                offCtx.save();
-                offCtx.strokeStyle = '#111827';
-                offCtx.lineWidth = 1.7;
-                offCtx.setLineDash([]);
-
-                function drawLine(points) {
-                    if (points.length === 0) return;
-                    offCtx.beginPath();
-                    let started = false;
-                    let prev = null;
-                    for (let i = 0; i < points.length; i++) {
-                        const p = points[i];
-                        if (p) {
-                            if (!started) {
-                                offCtx.moveTo(p.px, p.py);
-                                started = true;
-                                prev = p;
-                            } else {
-                                if (prev) {
-                                    const dx = p.px - prev.px;
-                                    const dy = p.py - prev.py;
-                                    const dist = Math.sqrt(dx * dx + dy * dy);
-                                    if (dist > MAX_DIST) {
-                                        offCtx.stroke();
-                                        offCtx.beginPath();
-                                        offCtx.moveTo(p.px, p.py);
-                                        prev = p;
-                                        continue;
-                                    }
-                                }
-                                offCtx.lineTo(p.px, p.py);
-                                prev = p;
-                            }
-                        } else {
-                            started = false;
-                            prev = null;
-                        }
-                    }
-                    offCtx.stroke();
-                }
-
-                // 水平变形线 (对应原始 y = const)
-                for (let y of values) {
-                    const pts = computeMappedPoints(y, true);
-                    drawLine(pts);
-                }
-
-                // 垂直变形线 (对应原始 x = const)
-                for (let x of values) {
-                    const pts = computeMappedPoints(x, false);
-                    drawLine(pts);
-                }
-
+                offCtx.moveTo(0, py);
+                offCtx.lineTo(SIZE, py);
+                offCtx.stroke();
                 offCtx.restore();
             }
 
-            // ---- 在主画布绘制红绿点 ----
-            function drawPoints(px, py) {
-                if (px === lastMousePx && py === lastMousePy) return;
-                lastMousePx = px;
-                lastMousePy = py;
+            for (let x of values) {
+                const px = (x + half) / step;
+                if (px < 0 || px > SIZE) continue;
+                const isAxis = Math.abs(x) < 0.01;
+                offCtx.save();
+                offCtx.strokeStyle = isAxis ? '#2563eb' : '#d1d5db';
+                offCtx.lineWidth = isAxis ? 1.8 : 1.0;
+                offCtx.setLineDash(isAxis ? [] : [3, 5]);
+                if (isAxis) offCtx.globalAlpha = 0.7;
+                offCtx.beginPath();
+                offCtx.moveTo(px, 0);
+                offCtx.lineTo(px, SIZE);
+                offCtx.stroke();
+                offCtx.restore();
+            }
 
-                ctx.clearRect(0, 0, SIZE, SIZE);
-                ctx.drawImage(offCanvas, 0, 0);
+            // ---- 坐标轴 (红色实线) ----
+            offCtx.save();
+            offCtx.strokeStyle = '#dc2626';
+            offCtx.lineWidth = 1.8;
+            offCtx.setLineDash([]);
+            const py0 = half / step;
+            if (py0 >= 0 && py0 <= SIZE) {
+                offCtx.beginPath();
+                offCtx.moveTo(0, py0);
+                offCtx.lineTo(SIZE, py0);
+                offCtx.stroke();
+            }
+            const px0 = half / step;
+            if (px0 >= 0 && px0 <= SIZE) {
+                offCtx.beginPath();
+                offCtx.moveTo(px0, 0);
+                offCtx.lineTo(px0, SIZE);
+                offCtx.stroke();
+            }
+            offCtx.fillStyle = '#dc2626';
+            offCtx.beginPath();
+            offCtx.arc(px0, py0, 4, 0, 2 * Math.PI);
+            offCtx.fill();
+            offCtx.restore();
 
-                if (px === null || py === null || !compiledFn) return;
+            if (!fn) return;
 
-                const range = params.range;
-                const { x, y } = pixelToComplex(px, py, range);
+            // ---- 变形网格 (黑色实线) ----
+            const stepSize = (2 * range) / samples;
+            const MAX_DIST = 200;
+            const s = math.complex(sRe, sIm);
 
-                // 红点 (z)
-                ctx.save();
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                ctx.shadowBlur = 8;
-                ctx.beginPath();
-                ctx.arc(px, py, 6, 0, 2 * Math.PI);
-                ctx.fillStyle = '#dc2626';
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                ctx.restore();
-
-                // 绿点 (f(z))
-                try {
-                    const z = math.complex(x, y);
-                    const scope = { z: z };
-                    const result = compiledFn.evaluate(scope);
-                    if (result !== undefined && result !== null) {
+            function computeMappedPoints(constVal, isHorizontal) {
+                const points = [];
+                for (let i = 0; i <= samples; i++) {
+                    const t = -range + i * stepSize;
+                    let z;
+                    if (isHorizontal) z = math.complex(t, constVal);
+                    else z = math.complex(constVal, t);
+                    try {
+                        const scope = { z: z, s: s };
+                        const result = fn.evaluate(scope);
                         let re, im;
                         if (math.isComplex(result)) {
                             re = result.re;
@@ -802,170 +620,275 @@
                             im = NaN;
                         }
                         if (isFinite(re) && isFinite(im) && Math.abs(re) < 1e6 && Math.abs(im) < 1e6) {
-                            const greenP = complexToPixel(re, im, range);
-                            if (greenP.px >= -200 && greenP.px <= SIZE + 200 &&
-                                greenP.py >= -200 && greenP.py <= SIZE + 200) {
-                                ctx.save();
-                                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                                ctx.shadowBlur = 8;
-                                ctx.beginPath();
-                                ctx.arc(greenP.px, greenP.py, 6, 0, 2 * Math.PI);
-                                ctx.fillStyle = '#22c55e';
-                                ctx.fill();
-                                ctx.shadowBlur = 0;
-                                ctx.strokeStyle = '#ffffff';
-                                ctx.lineWidth = 2;
-                                ctx.stroke();
-                                ctx.restore();
-                            }
+                            const p = complexToPixel(re, im, range);
+                            const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+                            points.push({
+                                px: clamp(p.px, -30, SIZE + 30),
+                                py: clamp(p.py, -30, SIZE + 30)
+                            });
+                        } else {
+                            points.push(null);
                         }
+                    } catch (e) {
+                        points.push(null);
                     }
-                } catch (e) {
-                    // 忽略
                 }
+                return points;
             }
 
-            // ---- 更新鼠标信息 ----
-            let pendingMouseUpdate = false;
-            let lastMouseEvent = null;
+            offCtx.save();
+            offCtx.setLineDash([]);
 
-            function scheduleMouseUpdate(e) {
-                if (e) {
-                    const { px, py } = getCanvasCoords(e);
-                    lastMouseEvent = { px, py };
+            function drawLine(points, color, lineWidth) {
+                if (points.length === 0) return;
+                offCtx.strokeStyle = color;
+                offCtx.lineWidth = lineWidth;
+                offCtx.beginPath();
+                let started = false;
+                let prev = null;
+                for (let i = 0; i < points.length; i++) {
+                    const p = points[i];
+                    if (p) {
+                        if (!started) {
+                            offCtx.moveTo(p.px, p.py);
+                            started = true;
+                            prev = p;
+                        } else {
+                            if (prev) {
+                                const dx = p.px - prev.px;
+                                const dy = p.py - prev.py;
+                                const dist = Math.sqrt(dx * dx + dy * dy);
+                                if (dist > MAX_DIST) {
+                                    offCtx.stroke();
+                                    offCtx.beginPath();
+                                    offCtx.moveTo(p.px, p.py);
+                                    prev = p;
+                                    continue;
+                                }
+                            }
+                            offCtx.lineTo(p.px, p.py);
+                            prev = p;
+                        }
+                    } else {
+                        started = false;
+                        prev = null;
+                    }
                 }
-                if (pendingMouseUpdate) return;
-                pendingMouseUpdate = true;
-                requestAnimationFrame(() => {
-                    pendingMouseUpdate = false;
-                    if (lastMouseEvent) {
-                        const { px, py } = lastMouseEvent;
-                        mousePx = px;
-                        mousePy = py;
-                        const range = params.range;
-                        const { x, y } = pixelToComplex(px, py, range);
-                        coordDisplay.textContent = `z = ${x.toFixed(4)} ${y >= 0 ? '+' : '-'} ${Math.abs(y).toFixed(4)}i`;
+                offCtx.stroke();
+            }
 
-                        if (compiledFn) {
-                            try {
-                                const z = math.complex(x, y);
-                                const scope = { z: z };
-                                const result = compiledFn.evaluate(scope);
-                                if (result !== undefined && result !== null) {
-                                    let re, im;
-                                    if (math.isComplex(result)) {
-                                        re = result.re;
-                                        im = result.im;
-                                    } else if (typeof result === 'number') {
-                                        re = result;
-                                        im = 0;
-                                    } else if (result && typeof result === 'object' && 're' in result && 'im' in result) {
-                                        re = result.re;
-                                        im = result.im;
+            // ---- 水平变形线 ----
+            for (let y of values) {
+                const pts = computeMappedPoints(y, true);
+                // ★ 实数轴 (y ≈ 0) 用蓝色，其他用黑色
+                const isRealAxis = Math.abs(y) < 0.01;
+                const color = isRealAxis ? '#2563eb' : '#111827';
+                const width = isRealAxis ? 2.2 : 1.7;
+                drawLine(pts, color, width);
+            }
+
+            // ---- 垂直变形线（始终黑色） ----
+            for (let x of values) {
+                const pts = computeMappedPoints(x, false);
+                drawLine(pts, '#111827', 1.7);
+            }
+
+            offCtx.restore();
+        }
+
+        // ---- 在主画布绘制红绿点 ----
+        function drawPoints(px, py) {
+            if (px === lastMousePx && py === lastMousePy) return;
+            lastMousePx = px;
+            lastMousePy = py;
+
+            ctx.clearRect(0, 0, SIZE, SIZE);
+            ctx.drawImage(offCanvas, 0, 0);
+
+            if (px === null || py === null || !compiledFn) return;
+
+            const range = params.range;
+            const { x, y } = pixelToComplex(px, py, range);
+            const s = math.complex(sRe, sIm);
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#dc2626';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+
+            try {
+                const z = math.complex(x, y);
+                const scope = { z: z, s: s };
+                const result = compiledFn.evaluate(scope);
+                if (result !== undefined && result !== null) {
+                    let re, im;
+                    if (math.isComplex(result)) {
+                        re = result.re;
+                        im = result.im;
+                    } else if (typeof result === 'number') {
+                        re = result;
+                        im = 0;
+                    } else if (result && typeof result === 'object' && 're' in result && 'im' in result) {
+                        re = result.re;
+                        im = result.im;
+                    } else {
+                        re = NaN;
+                        im = NaN;
+                    }
+                    if (isFinite(re) && isFinite(im) && Math.abs(re) < 1e6 && Math.abs(im) < 1e6) {
+                        const greenP = complexToPixel(re, im, range);
+                        if (greenP.px >= -200 && greenP.px <= SIZE + 200 &&
+                            greenP.py >= -200 && greenP.py <= SIZE + 200) {
+                            ctx.save();
+                            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                            ctx.shadowBlur = 8;
+                            ctx.beginPath();
+                            ctx.arc(greenP.px, greenP.py, 6, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#22c55e';
+                            ctx.fill();
+                            ctx.shadowBlur = 0;
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // ---- 更新鼠标信息 ----
+        let pendingMouseUpdate = false;
+        let lastMouseEvent = null;
+
+        function scheduleMouseUpdate(e) {
+            if (e) {
+                const { px, py } = getCanvasCoords(e);
+                lastMouseEvent = { px, py };
+            }
+            if (pendingMouseUpdate) return;
+            pendingMouseUpdate = true;
+            requestAnimationFrame(() => {
+                pendingMouseUpdate = false;
+                if (lastMouseEvent) {
+                    const { px, py } = lastMouseEvent;
+                    mousePx = px;
+                    mousePy = py;
+                    const range = params.range;
+                    const { x, y } = pixelToComplex(px, py, range);
+                    coordDisplay.textContent = `z = ${x.toFixed(4)} ${y >= 0 ? '+' : '-'} ${Math.abs(y).toFixed(4)}i`;
+
+                    if (compiledFn) {
+                        try {
+                            const z = math.complex(x, y);
+                            const s = math.complex(sRe, sIm);
+                            const scope = { z: z, s: s };
+                            const result = compiledFn.evaluate(scope);
+                            if (result !== undefined && result !== null) {
+                                let re, im;
+                                if (math.isComplex(result)) {
+                                    re = result.re;
+                                    im = result.im;
+                                } else if (typeof result === 'number') {
+                                    re = result;
+                                    im = 0;
+                                } else if (result && typeof result === 'object' && 're' in result && 'im' in result) {
+                                    re = result.re;
+                                    im = result.im;
+                                } else {
+                                    re = NaN;
+                                    im = NaN;
+                                }
+                                if (isFinite(re) && isFinite(im) && Math.abs(re) < 1e6 && Math.abs(im) < 1e6) {
+                                    let fStr;
+                                    if (Math.abs(im) < 1e-12) {
+                                        fStr = re.toFixed(4);
                                     } else {
-                                        re = NaN;
-                                        im = NaN;
+                                        fStr =
+                                            `${re.toFixed(4)} ${im >= 0 ? '+' : '-'} ${Math.abs(im).toFixed(4)}i`;
                                     }
-                                    if (isFinite(re) && isFinite(im) && Math.abs(re) < 1e6 && Math.abs(im) < 1e6) {
-                                        let fStr;
-                                        if (Math.abs(im) < 1e-12) {
-                                            fStr = re.toFixed(4);
-                                        } else {
-                                            fStr =
-                                                `${re.toFixed(4)} ${im >= 0 ? '+' : '-'} ${Math.abs(im).toFixed(4)}i`;
-                                        }
-                                        fvalDisplay.textContent = `f(z) = ${fStr}`;
-                                    } else {
-                                        fvalDisplay.textContent = 'f(z) = —';
-                                    }
+                                    fvalDisplay.textContent = `f(z) = ${fStr}`;
                                 } else {
                                     fvalDisplay.textContent = 'f(z) = —';
                                 }
-                            } catch (err) {
-                                fvalDisplay.textContent = `f(z) = ⚠ ${err.message}`;
+                            } else {
+                                fvalDisplay.textContent = 'f(z) = —';
                             }
-                        } else {
-                            fvalDisplay.textContent = 'f(z) = —';
+                        } catch (err) {
+                            fvalDisplay.textContent = `f(z) = ⚠ ${err.message}`;
                         }
-
-                        drawPoints(px, py);
-                    }
-                });
-            }
-
-            // ---- 渲染函数 ----
-            function render(expr) {
-                if (isComputing) {
-                    abortFlag = true;
-                    const wait = () => {
-                        if (isComputing) setTimeout(wait, 40);
-                        else requestAnimationFrame(() => render(expr));
-                    };
-                    wait();
-                    return;
-                }
-
-                const exprStr = expr.trim() || 'z';
-                exprDisplay.textContent = exprStr;
-
-                let fn;
-                try {
-                    const node = math.parse(exprStr);
-                    fn = node.compile();
-                } catch (err) {
-                    setStatus('语法错误: ' + err.message, 'error');
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, SIZE, SIZE);
-                    ctx.fillStyle = '#b91c1c';
-                    ctx.font = '18px "Inter", "Segoe UI", sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('⚠ ' + err.message, SIZE / 2, SIZE / 2);
-                    compiledFn = null;
-                    isReady = false;
-                    fvalDisplay.textContent = 'f(z) = —';
-                    return;
-                }
-
-                compiledFn = fn;
-                isReady = false;
-                setStatus('渲染中…', 'busy');
-                isComputing = true;
-                abortFlag = false;
-
-                const range = params.range;
-                const gridStep = params.gridStep;
-                const samples = params.samples;
-
-                requestAnimationFrame(() => {
-                    if (abortFlag) {
-                        isComputing = false;
-                        setStatus('已取消', 'idle');
-                        return;
-                    }
-                    drawGridToOffscreen(fn, range, gridStep, samples);
-                    isReady = true;
-                    isComputing = false;
-                    setStatus('就绪', 'idle');
-
-                    lastMousePx = -1;
-                    lastMousePy = -1;
-                    if (mousePx !== null && mousePy !== null) {
-                        scheduleMouseUpdate();
                     } else {
-                        ctx.clearRect(0, 0, SIZE, SIZE);
-                        ctx.drawImage(offCanvas, 0, 0);
+                        fvalDisplay.textContent = 'f(z) = —';
                     }
-                });
+
+                    drawPoints(px, py);
+                }
+            });
+        }
+
+        // ---- 渲染函数 ----
+        function render(expr) {
+            if (isComputing) {
+                abortFlag = true;
+                const wait = () => {
+                    if (isComputing) setTimeout(wait, 40);
+                    else requestAnimationFrame(() => render(expr));
+                };
+                wait();
+                return;
             }
 
-            // ---- 重绘 ----
-            function redraw() {
-                if (!compiledFn || !isReady) return;
-                const range = params.range;
-                const gridStep = params.gridStep;
-                const samples = params.samples;
-                drawGridToOffscreen(compiledFn, range, gridStep, samples);
+            const exprStr = expr.trim() || 'z';
+            exprDisplay.textContent = exprStr;
+
+            let fn;
+            try {
+                const node = math.parse(exprStr);
+                fn = node.compile();
+            } catch (err) {
+                setStatus('语法错误: ' + err.message, 'error');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, SIZE, SIZE);
+                ctx.fillStyle = '#b91c1c';
+                ctx.font = '18px "Inter", "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('⚠ ' + err.message, SIZE / 2, SIZE / 2);
+                compiledFn = null;
+                isReady = false;
+                fvalDisplay.textContent = 'f(z) = —';
+                return;
+            }
+
+            compiledFn = fn;
+            isReady = false;
+            setStatus('渲染中…', 'busy');
+            isComputing = true;
+            abortFlag = false;
+
+            const range = params.range;
+            const gridStep = params.gridStep;
+            const samples = params.samples;
+
+            requestAnimationFrame(() => {
+                if (abortFlag) {
+                    isComputing = false;
+                    setStatus('已取消', 'idle');
+                    return;
+                }
+                drawGridToOffscreen(fn, range, gridStep, samples, sRe, sIm);
+                isReady = true;
+                isComputing = false;
+                setStatus('就绪', 'idle');
+
                 lastMousePx = -1;
                 lastMousePy = -1;
                 if (mousePx !== null && mousePy !== null) {
@@ -974,134 +897,171 @@
                     ctx.clearRect(0, 0, SIZE, SIZE);
                     ctx.drawImage(offCanvas, 0, 0);
                 }
-            }
-
-            // ---- 事件绑定 ----
-            input.addEventListener('input', function() {
-                const val = this.value;
-                if (val !== exprDisplay.textContent) render(val);
             });
+        }
 
-            function getCanvasCoords(e) {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                let clientX, clientY;
-                if (e.touches) {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                    e.preventDefault();
-                } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                }
-                const px = (clientX - rect.left) * scaleX;
-                const py = (clientY - rect.top) * scaleY;
-                return { px: Math.min(Math.max(px, 0), SIZE - 1), py: Math.min(Math.max(py, 0), SIZE - 1) };
-            }
-
-            function onCanvasMove(e) {
-                scheduleMouseUpdate(e);
-            }
-
-            canvas.addEventListener('mousemove', onCanvasMove);
-            canvas.addEventListener('touchmove', function(e) { e.preventDefault();
-                onCanvasMove(e); }, { passive: false });
-            canvas.addEventListener('touchstart', function(e) { e.preventDefault();
-                onCanvasMove(e); }, { passive: false });
-
-            canvas.addEventListener('mouseleave', function() {
-                mousePx = mousePy = null;
-                lastMousePx = -1;
-                lastMousePy = -1;
-                coordDisplay.textContent = 'z = —';
-                fvalDisplay.textContent = 'f(z) = —';
+        // ---- 重绘 ----
+        function redraw() {
+            if (!compiledFn || !isReady) return;
+            const range = params.range;
+            const gridStep = params.gridStep;
+            const samples = params.samples;
+            drawGridToOffscreen(compiledFn, range, gridStep, samples, sRe, sIm);
+            lastMousePx = -1;
+            lastMousePy = -1;
+            if (mousePx !== null && mousePy !== null) {
+                scheduleMouseUpdate();
+            } else {
                 ctx.clearRect(0, 0, SIZE, SIZE);
                 ctx.drawImage(offCanvas, 0, 0);
-            });
-            canvas.addEventListener('touchend', function() {
-                mousePx = mousePy = null;
-                lastMousePx = -1;
-                lastMousePy = -1;
-                coordDisplay.textContent = 'z = —';
-                fvalDisplay.textContent = 'f(z) = —';
-                ctx.clearRect(0, 0, SIZE, SIZE);
-                ctx.drawImage(offCanvas, 0, 0);
-            });
+            }
+        }
 
-            // ---- 滚轮缩放 ----
-            canvas.addEventListener('wheel', function(e) {
+        // ---- 更新 s 显示 ----
+        function updateSDisplay() {
+            const reStr = sRe.toFixed(1);
+            const imStr = sIm.toFixed(1);
+            let sign = sIm >= 0 ? '+' : '-';
+            sDisplay.textContent = `s = ${reStr} ${sign} ${Math.abs(sIm).toFixed(1)}i`;
+        }
+
+        // ---- 事件绑定 ----
+        input.addEventListener('input', function() {
+            const val = this.value;
+            if (val !== exprDisplay.textContent) render(val);
+        });
+
+        sReSlider.addEventListener('input', function() {
+            sRe = parseFloat(this.value);
+            sReValue.textContent = sRe.toFixed(1);
+            updateSDisplay();
+            if (compiledFn && isReady) redraw();
+        });
+        sImSlider.addEventListener('input', function() {
+            sIm = parseFloat(this.value);
+            sImValue.textContent = sIm.toFixed(1);
+            updateSDisplay();
+            if (compiledFn && isReady) redraw();
+        });
+
+        gridStepSlider.addEventListener('input', function() {
+            params.gridStep = parseFloat(this.value);
+            gridStepValue.textContent = params.gridStep.toFixed(2);
+            if (compiledFn && isReady) redraw();
+        });
+        samplesSlider.addEventListener('input', function() {
+            params.samples = parseInt(this.value);
+            samplesValue.textContent = params.samples;
+            if (compiledFn && isReady) redraw();
+        });
+
+        canvas.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            if (wheelTimeout) {
+                clearTimeout(wheelTimeout);
+                wheelTimeout = null;
+            }
+            const delta = e.deltaY > 0 ? 0.15 : -0.15;
+            let newRange = params.range + delta;
+            newRange = Math.min(Math.max(newRange, 0.5), 8.0);
+            params.range = newRange;
+            rangeDisplay.textContent = newRange.toFixed(1);
+            wheelTimeout = setTimeout(() => {
+                wheelTimeout = null;
+                if (compiledFn && isReady) redraw();
+            }, 30);
+        }, { passive: false });
+
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
                 e.preventDefault();
-                if (wheelTimeout) {
-                    clearTimeout(wheelTimeout);
-                    wheelTimeout = null;
-                }
-                const delta = e.deltaY > 0 ? 0.15 : -0.15;
-                let newRange = params.range + delta;
-                newRange = Math.min(Math.max(newRange, 0.5), 8.0);
-                params.range = newRange;
-                rangeDisplay.textContent = newRange.toFixed(1);
-                wheelTimeout = setTimeout(() => {
-                    wheelTimeout = null;
-                    redraw();
-                }, 30);
-            }, { passive: false });
-
-            // ---- 滑块 ----
-            gridStepSlider.addEventListener('input', function() {
-                params.gridStep = parseFloat(this.value);
-                gridStepValue.textContent = params.gridStep.toFixed(2);
-                redraw();
-            });
-            samplesSlider.addEventListener('input', function() {
-                params.samples = parseInt(this.value);
-                samplesValue.textContent = params.samples;
-                redraw();
-            });
-
-            // ---- 预设 ----
-            document.querySelectorAll('.presets button').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    input.value = this.dataset.expr;
-                    input.dispatchEvent(new Event('input'));
-                });
-            });
-
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') this.blur();
-            });
-
-            // ---- 初始化 ----
-            function init() {
-                if (typeof math === 'undefined') {
-                    document.getElementById('statusText').textContent = '⚠️ 无法加载 mathjs';
-                    document.getElementById('statusDot').className = 'dot error';
-                    ctx.fillStyle = '#f8fafc';
-                    ctx.fillRect(0, 0, SIZE, SIZE);
-                    ctx.fillStyle = '#b91c1c';
-                    ctx.font = '20px "Inter", sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('请刷新页面或检查网络', SIZE / 2, SIZE / 2);
-                    return;
-                }
-                input.value = 'exp(z)';
-                render('exp(z)');
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
             }
+            const px = (clientX - rect.left) * scaleX;
+            const py = (clientY - rect.top) * scaleY;
+            return { px: Math.min(Math.max(px, 0), SIZE - 1), py: Math.min(Math.max(py, 0), SIZE - 1) };
+        }
 
-            if (document.readyState === 'complete') init();
-            else window.addEventListener('load', init);
+        function onCanvasMove(e) {
+            scheduleMouseUpdate(e);
+        }
 
-            let resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(() => {
-                    if (compiledFn && isReady) redraw();
-                }, 150);
+        canvas.addEventListener('mousemove', onCanvasMove);
+        canvas.addEventListener('touchmove', function(e) { e.preventDefault();
+            onCanvasMove(e); }, { passive: false });
+        canvas.addEventListener('touchstart', function(e) { e.preventDefault();
+            onCanvasMove(e); }, { passive: false });
+
+        canvas.addEventListener('mouseleave', function() {
+            mousePx = mousePy = null;
+            lastMousePx = -1;
+            lastMousePy = -1;
+            coordDisplay.textContent = 'z = —';
+            fvalDisplay.textContent = 'f(z) = —';
+            ctx.clearRect(0, 0, SIZE, SIZE);
+            ctx.drawImage(offCanvas, 0, 0);
+        });
+        canvas.addEventListener('touchend', function() {
+            mousePx = mousePy = null;
+            lastMousePx = -1;
+            lastMousePy = -1;
+            coordDisplay.textContent = 'z = —';
+            fvalDisplay.textContent = 'f(z) = —';
+            ctx.clearRect(0, 0, SIZE, SIZE);
+            ctx.drawImage(offCanvas, 0, 0);
+        });
+
+        document.querySelectorAll('.presets button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                input.value = this.dataset.expr;
+                input.dispatchEvent(new Event('input'));
             });
+        });
 
-        })();
-    </script>
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') this.blur();
+        });
+
+        // ---- 初始化 ----
+        function init() {
+            if (typeof math === 'undefined') {
+                document.getElementById('statusText').textContent = '⚠️ 无法加载 mathjs';
+                document.getElementById('statusDot').className = 'dot error';
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(0, 0, SIZE, SIZE);
+                ctx.fillStyle = '#b91c1c';
+                ctx.font = '20px "Inter", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('请刷新页面或检查网络', SIZE / 2, SIZE / 2);
+                return;
+            }
+            updateSDisplay();
+            input.value = 'z^2 + s';
+            render('z^2 + s');
+        }
+
+        if (document.readyState === 'complete') init();
+        else window.addEventListener('load', init);
+
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (compiledFn && isReady) redraw();
+            }, 150);
+        });
+
+    })();
+</script>
 
 </body>
 </html>
